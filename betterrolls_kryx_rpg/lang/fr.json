@@ -2,7 +2,7 @@
 	"I18N.MAINTAINERS": ["Olirin"],
 	
 	"Better Rolls": "Better Rolls",
-	"Better Rolls for Kryx RPG": "Better Rolls pour DD5e",
+	"Better Rolls for Kryx RPG": "Better Rolls pour Kryx RPG",
 	
 	"brkr.diceEnabled.name": "Activer Better Rolls",
 	"brkr.diceEnabled.hint": "Activer l'amélioration des jets de dès pour Kryx RPG. Affect tous les jets de caractéristiques, sauvegarde, objets, sorts et dons de la feuille de personnage. Requière la réouverture de la feuille.",

@@ -62,8 +62,8 @@ export class BetterRollsHooks {
 	}
 }
 
-BetterRollsHooks.registerActorSheet("ActorSheet5e");
-BetterRollsHooks.registerItemSheet("ItemSheet5e");
+BetterRollsHooks.registerActorSheet("ActorSheetKryx");
+BetterRollsHooks.registerItemSheet("ItemSheetKryx");
 
 
 Hooks.on("renderChatMessage", (message, html, data) => {

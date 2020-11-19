@@ -254,7 +254,7 @@ export class CustomRoll {
 	
 	/**
 	* Creates a chat message with the requested ability check or saving throw.
-	* @param {Actor5e} actor		The actor object to reference for the roll.
+	* @param {ActorKryx} actor		The actor object to reference for the roll.
 	* @param {String} ability		The ability score to roll.
 	* @param {String} rollType		String of either "check" or "save" 
 	*/
@@ -674,7 +674,7 @@ export class CustomItemRoll {
 			case 'desc':
 				// Display info from Components module
 				let componentField = "";
-				if (game.modules.get("components5e") && game.modules.get("components5e").active) {
+				if (game.modules.get("components_kryx_rpg") && game.modules.get("components_kryx_rpg").active) {
 					componentField = window.ComponentsModule.getComponentHtml(item, 20);
 				}
 				fieldArgs[0] = {text: componentField + item.data.data.description.value};

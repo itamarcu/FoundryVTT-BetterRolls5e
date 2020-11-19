@@ -11,7 +11,7 @@ export default class ExtendedPrompt extends Dialog {
 
     /**
      * Store a reference to the Item entity being used
-     * @type {Item5e}
+     * @type {ItemKryx}
      */
     this.item = item;
   }
