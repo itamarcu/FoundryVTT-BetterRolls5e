@@ -1,1 +1,1 @@
-# Better Rolls for Kryx RPG - Forked for KryxRPG
+# Better Rolls for D&D 5e - Forked for KryxRPG
