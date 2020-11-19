@@ -1,4 +1,4 @@
-import { DND5E } from "../../../systems/dnd5e/module/config.js";
+import { KRYX_RPG } from "../../../systems/dnd5e/module/config.js";
 import { BetterRollsHooks } from "./hooks.js";
 import { CustomRoll, CustomItemRoll } from "./custom-roll.js";
 
@@ -94,7 +94,7 @@ export function isCheck(item) {
 	return item.data.type === "tool" || typeof item.data.data?.proficient === "number";
 }
 
-let dnd5e = DND5E;
+let dnd5e = KRYX_RPG;
 
 function getQuickDescriptionDefault() {
 	return game.settings.get("betterrolls_kryx_rpg", "quickDefaultDescriptionEnabled");

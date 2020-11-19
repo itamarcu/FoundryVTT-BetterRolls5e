@@ -42,7 +42,7 @@ export async function addBetterRollsContent(app, protoHtml) {
 	const canConsume = hasQuantity || hasUses || hasResource || hasCharge;
 
 	const betterRollsTemplate = await renderTemplate(betterRollsTemplateString, {
-		DND5E: CONFIG.DND5E,
+		KRYX_RPG: CONFIG.KRYX_RPG,
 		item,
 		canConsume,
 		hasQuantity,

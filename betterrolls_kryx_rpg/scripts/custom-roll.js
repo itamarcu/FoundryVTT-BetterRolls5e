@@ -1,9 +1,9 @@
 import { i18n, hasMaestroSound, isAttack, isSave, getSave, isCheck, redUpdateFlags, getWhisperData, createMessage } from "./betterrolls_kryx_rpg.js";
 import { Utils } from "./utils.js";
 
-import { DND5E } from "../../../systems/dnd5e/module/config.js";
+import { KRYX_RPG } from "../../../systems/dnd5e/module/config.js";
 
-let dnd5e = DND5E;
+let dnd5e = KRYX_RPG;
 let DEBUG = false;
 
 const blankRoll = new Roll("0").roll(); // Used for CHAT_MESSAGE_TYPES.ROLL, which requires a roll that Better Rolls otherwise does not need
@@ -1567,7 +1567,7 @@ export class CustomItemRoll {
 			let spellSlot = isPact ? "pact" : "spell"+lvl;
 			const slots = parseInt(actor.data.data.spells[spellSlot].value);
       if ( slots === 0 || Number.isNaN(slots) ) {
-				ui.notifications.error(game.i18n.localize("DND5E.SpellCastNoSlots"));
+				ui.notifications.error(game.i18n.localize("KRYX_RPG.SpellCastNoSlots"));
 				return "error";
 			}
 			await actor.update({
@@ -1615,22 +1615,22 @@ export class CustomItemRoll {
 
 		// Check for consuming uses, but not quantity
 		if (hasUses && request.use && !request.quantity) {
-			if (!current) { ui.notifications.warn(game.i18n.format("DND5E.ItemNoUses", {name: item.name})); return "error"; }
+			if (!current) { ui.notifications.warn(game.i18n.format("KRYX_RPG.ItemNoUses", {name: item.name})); return "error"; }
 		}
 
 		// Check for consuming quantity, but not uses
 		if (request.quantity && !request.use) {
-			if (!q) { ui.notifications.warn(game.i18n.format("DND5E.ItemNoUses", {name: item.name})); return "error"; }
+			if (!q) { ui.notifications.warn(game.i18n.format("KRYX_RPG.ItemNoUses", {name: item.name})); return "error"; }
 		}
 
 		// Check for consuming quantity and uses
 		if (hasUses && request.use && request.quantity) {
-			if (!current && q <= 1) { ui.notifications.warn(game.i18n.format("DND5E.ItemNoUses", {name: item.name})); return "error"; }
+			if (!current && q <= 1) { ui.notifications.warn(game.i18n.format("KRYX_RPG.ItemNoUses", {name: item.name})); return "error"; }
 		}
 
 		// Check for consuming charge ("Action Recharge")
 		if (request.charge) {
-			if (!recharge.charged) { ui.notifications.warn(game.i18n.format("DND5E.ItemNoUses", {name: item.name})); return "error"; }
+			if (!recharge.charged) { ui.notifications.warn(game.i18n.format("KRYX_RPG.ItemNoUses", {name: item.name})); return "error"; }
 		}
 
 		// Check for consuming resource.
