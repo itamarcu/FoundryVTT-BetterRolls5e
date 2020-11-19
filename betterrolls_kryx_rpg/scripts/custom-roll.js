@@ -703,7 +703,7 @@ export class CustomItemRoll {
 				await this.fieldToTemplate(this.fields[i]);
 			}
 
-			if (this.isCrit && this.hasDamage && this.item.data.flags.betterRolls5e?.critDamage?.value) {
+			if (this.isCrit && this.hasDamage && this.item.data.flags.BetterRollsKryxRPG?.critDamage?.value) {
 				await this.fieldToTemplate(["crit"]);
 			}
 			
@@ -756,7 +756,7 @@ export class CustomItemRoll {
 		let item = this.item,
 			itemData = item.data.data,
 			flags = item.data.flags,
-			brFlags = flags.betterRolls5e,
+			brFlags = flags.BetterRollsKryxRPG,
 			preset = this.params.preset,
 			properties = false,
 			useCharge = {},
@@ -995,7 +995,7 @@ export class CustomItemRoll {
 		try { characterCrit = Number(getProperty(itm, "actor.data.flags.kryx_rpg.weaponCriticalThreshold")) || 20;  }
 		catch(error) { characterCrit = itm.actor.data.flags.kryx_rpg.weaponCriticalThreshold || 20; }
 		
-		let itemCrit = Number(getProperty(itm, "data.flags.betterRolls5e.critRange.value")) || 20;
+		let itemCrit = Number(getProperty(itm, "data.flags.BetterRollsKryxRPG.critRange.value")) || 20;
 		//	console.log(critThreshold, characterCrit, itemCrit);
 		
 		// If a specific critThreshold is set, use that
@@ -1153,7 +1153,7 @@ export class CustomItemRoll {
 		let itemData = itm.data.data,
 			rollData = duplicate(itm.actor.data.data),
 			abl = itemData.ability,
-			flags = itm.data.flags.betterRolls5e,
+			flags = itm.data.flags.BetterRollsKryxRPG,
 			damageFormula,
 			damageType = itemData.damage.parts[damageIndex][1],
 			isVersatile = false,
@@ -1178,7 +1178,7 @@ export class CustomItemRoll {
 		
 		let type = itm.data.type,
 			parts = [],
-			dtype = CONFIG.betterRolls5e.combinedDamageTypes[damageType];
+			dtype = CONFIG.BetterRollsKryxRPG.combinedDamageTypes[damageType];
 		
 		let generalMod = rollData.attributes.spellcasting;
 		
@@ -1368,7 +1368,7 @@ export class CustomItemRoll {
 	}
 
 	async rollCritExtra(index) {
-		let damageIndex = (index ? toString(index) : null) || this.item.data.flags.betterRolls5e?.critDamage?.value || "";
+		let damageIndex = (index ? toString(index) : null) || this.item.data.flags.BetterRollsKryxRPG?.critDamage?.value || "";
 		let asdf;
 		if (damageIndex) {
 			return await this.rollDamage({damageIndex:Number(damageIndex), forceCrit:"never"});
@@ -1385,7 +1385,7 @@ export class CustomItemRoll {
 		let itemData = item.data.data,
 			formula = item.data.data.formula,
 			rollData = duplicate(item.actor.data.data),
-			flags = item.data.flags.betterRolls5e;
+			flags = item.data.flags.BetterRollsKryxRPG;
 		
 		this.addToRollData(rollData);
 		

@@ -100,7 +100,7 @@ function getQuickDescriptionDefault() {
 	return game.settings.get("betterrolls_kryx_rpg", "quickDefaultDescriptionEnabled");
 }
 
-CONFIG.betterRolls5e = {
+CONFIG.BetterRollsKryxRPG = {
 	validItemTypes: ["weapon", "spell", "equipment", "feat", "tool", "consumable"],
 	allFlags: {
 		weaponFlags: {
@@ -187,7 +187,7 @@ CONFIG.betterRolls5e = {
 
 Hooks.on(`ready`, () => {
 	// Make a combined damage type array that includes healing
-	CONFIG.betterRolls5e.combinedDamageTypes = mergeObject(duplicate(kryx_rpg.damageTypes), kryx_rpg.healingTypes);
+	CONFIG.BetterRollsKryxRPG.combinedDamageTypes = mergeObject(duplicate(kryx_rpg.damageTypes), kryx_rpg.healingTypes);
 	
 	// Updates crit text from the dropdown.
 	let critText = game.settings.get("betterrolls_kryx_rpg", "critString")
@@ -235,7 +235,7 @@ async function addButtonsToItemLi(li, actor, buttonContainer) {
 	
     let item = actor.getOwnedItem(String(li.attr("data-item-id")));
     let itemData = item.data.data;
-    let flags = item.data.flags.betterRolls5e;
+    let flags = item.data.flags.BetterRollsKryxRPG;
 
     // Check settings
     let diceEnabled = game.settings.get("betterrolls_kryx_rpg", "diceEnabled");
@@ -269,7 +269,7 @@ async function addButtonsToItemLi(li, actor, buttonContainer) {
 				if (itemData.damage.parts.length > 1) {
 					buttons.append(`<br>`);
 					for (let i = 0; i < itemData.damage.parts.length; i++) {
-						let damageString = (contextEnabled && flags.quickDamage.context[i]) || CONFIG.betterRolls5e.combinedDamageTypes[itemData.damage.parts[i][1]];
+						let damageString = (contextEnabled && flags.quickDamage.context[i]) || CONFIG.BetterRollsKryxRPG.combinedDamageTypes[itemData.damage.parts[i][1]];
 						buttons.append(`<span class="tag"><button data-action="damageRoll" data-value=${i}>${i}: ${damageString}</button></span>`);
 						if (i === 0 && itemData.damage.versatile) {
 							buttons.append(`<span class="tag"><button data-action="verDamageRoll" data-value=0>${0}: ${damageString} (${kryx_rpg.weaponProperties.ver})</button></span>`);
@@ -380,39 +380,39 @@ async function addButtonsToItemLi(li, actor, buttonContainer) {
 }
 
 export async function redUpdateFlags(item) {
-	if (!item.data || CONFIG.betterRolls5e.validItemTypes.indexOf(item.data.type) == -1) { return; }
-	if (item.data.flags.betterRolls5e === undefined) {
-		item.data.flags.betterRolls5e = {};
+	if (!item.data || CONFIG.BetterRollsKryxRPG.validItemTypes.indexOf(item.data.type) == -1) { return; }
+	if (item.data.flags.BetterRollsKryxRPG === undefined) {
+		item.data.flags.BetterRollsKryxRPG = {};
 	}
 	
-	let flags = duplicate(CONFIG.betterRolls5e.allFlags[item.data.type.concat("Flags")]);
-	item.data.flags.betterRolls5e = mergeObject(flags, item.data.flags.betterRolls5e);
+	let flags = duplicate(CONFIG.BetterRollsKryxRPG.allFlags[item.data.type.concat("Flags")]);
+	item.data.flags.BetterRollsKryxRPG = mergeObject(flags, item.data.flags.BetterRollsKryxRPG);
 	
 	// If quickDamage flags should exist, update them based on which damage formulae are available
-	if (CONFIG.betterRolls5e.allFlags[item.data.type.concat("Flags")].quickDamage) {
+	if (CONFIG.BetterRollsKryxRPG.allFlags[item.data.type.concat("Flags")].quickDamage) {
 		let newQuickDamageValues = [];
 		let newQuickDamageAltValues = [];
 		
 		// Make quickDamage flags if they don't exist
-		if (!item.data.flags.betterRolls5e.quickDamage) {
-			item.data.flags.betterRolls5e.quickDamage = {type: "Array", value: [], altValue: []};
+		if (!item.data.flags.BetterRollsKryxRPG.quickDamage) {
+			item.data.flags.BetterRollsKryxRPG.quickDamage = {type: "Array", value: [], altValue: []};
 		}
 		
 		for (let i = 0; i < item.data.data.damage.parts.length; i++) {
 			newQuickDamageValues[i] = true;
 			newQuickDamageAltValues[i] = true;
-			if (item.data.flags.betterRolls5e.quickDamage.value[i] != null) {
-				newQuickDamageValues[i] = item.data.flags.betterRolls5e.quickDamage.value[i];
+			if (item.data.flags.BetterRollsKryxRPG.quickDamage.value[i] != null) {
+				newQuickDamageValues[i] = item.data.flags.BetterRollsKryxRPG.quickDamage.value[i];
 			}
-			if (item.data.flags.betterRolls5e.quickDamage.altValue[i] != null) {
-				newQuickDamageAltValues[i] = item.data.flags.betterRolls5e.quickDamage.altValue[i];
+			if (item.data.flags.BetterRollsKryxRPG.quickDamage.altValue[i] != null) {
+				newQuickDamageAltValues[i] = item.data.flags.BetterRollsKryxRPG.quickDamage.altValue[i];
 			}
 		}
-		item.data.flags.betterRolls5e.quickDamage.value = newQuickDamageValues;
-		item.data.flags.betterRolls5e.quickDamage.altValue = newQuickDamageAltValues;
+		item.data.flags.BetterRollsKryxRPG.quickDamage.value = newQuickDamageValues;
+		item.data.flags.BetterRollsKryxRPG.quickDamage.altValue = newQuickDamageAltValues;
 	}
 	
-	return item.data.flags.betterRolls5e;
+	return item.data.flags.BetterRollsKryxRPG;
 }
 
 export function updateSaveButtons(html) {
