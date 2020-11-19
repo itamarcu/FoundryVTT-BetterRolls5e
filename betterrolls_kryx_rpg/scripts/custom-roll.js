@@ -1,9 +1,9 @@
 import { i18n, hasMaestroSound, isAttack, isSave, getSave, isCheck, redUpdateFlags, getWhisperData, createMessage } from "./betterrolls_kryx_rpg.js";
 import { Utils } from "./utils.js";
 
-import { KRYX_RPG } from "../../../systems/dnd5e/module/config.js";
+import { KRYX_RPG } from "../../../systems/kryx_rpg/module/config.js";
 
-let dnd5e = KRYX_RPG;
+let kryx_rpg = KRYX_RPG;
 let DEBUG = false;
 
 const blankRoll = new Roll("0").roll(); // Used for CHAT_MESSAGE_TYPES.ROLL, which requires a roll that Better Rolls otherwise does not need
@@ -150,7 +150,7 @@ export class CustomRoll {
 	// Creates a chat message with the requested skill check.
 	static async fullRollSkill(actor, skill, params) {
 		let skl = actor.data.data.skills[skill],
-			label = dnd5e.skills[skill];
+			label = kryx_rpg.skills[skill];
 			
 		let wd = getWhisperData();
 		
@@ -216,7 +216,7 @@ export class CustomRoll {
 			d20String = "1d20r<2";
 		}
 
-		if (getProperty(actor, "data.flags.dnd5e.reliableTalent") && skill.value >= 1) {
+		if (getProperty(actor, "data.flags.kryx_rpg.reliableTalent") && skill.value >= 1) {
 			d20String = `{${d20String},10}kh`;
 		}
 		
@@ -262,7 +262,7 @@ export class CustomRoll {
 		let multiRoll,
 			titleString,
 			abl = ability,
-			label = dnd5e.abilities[ability];
+			label = kryx_rpg.abilities[ability];
 		
 		let wd = getWhisperData();
 		
@@ -334,7 +334,7 @@ export class CustomRoll {
 			data["secondCheckBonus"] = secondCheckBonus;
 		}
 
-		if (actor.getFlag("dnd5e", "jackOfAllTrades")) {
+		if (actor.getFlag("kryx_rpg", "jackOfAllTrades")) {
 			parts.push(`floor(@attributes.prof / 2)`);
 		}
 
@@ -525,7 +525,7 @@ export class CustomItemRoll {
 		// Show properties
 		this.properties = (params.properties) ? this.listProperties() : null;
 		
-		let printedSlotLevel = ( item.data.type === "spell" && this.params.slotLevel != item.data.data.level ) ? dnd5e.spellLevels[this.params.slotLevel] : null;
+		let printedSlotLevel = ( item.data.type === "spell" && this.params.slotLevel != item.data.data.level ) ? kryx_rpg.spellLevels[this.params.slotLevel] : null;
 			
 		let title = (this.params.title || await renderTemplate("modules/betterrolls_kryx_rpg/templates/red-header.html", {item:item, slotLevel:printedSlotLevel}));
 		
@@ -822,15 +822,15 @@ export class CustomItemRoll {
 		let data = item.data.data,
 			ad = item.actor.data.data;
 		
-		let range = ((data.range) && (data.range.value || data.range.units)) ? (data.range.value || "") + (((data.range.long) && (data.range.long !== 0) && (data.rangelong != data.range.value)) ? "/" +data.range.long : "") + " " + (data.range.units ? dnd5e.distanceUnits[data.range.units] : "") : null;
-		let target = (data.target && data.target.type) ? i18n("Target: ").concat(dnd5e.targetTypes[data.target.type]) + ((data.target.units ) && (data.target.units !== "none") ? " (" + data.target.value + " " + dnd5e.distanceUnits[data.target.units] + ")" : "") : null;
+		let range = ((data.range) && (data.range.value || data.range.units)) ? (data.range.value || "") + (((data.range.long) && (data.range.long !== 0) && (data.rangelong != data.range.value)) ? "/" +data.range.long : "") + " " + (data.range.units ? kryx_rpg.distanceUnits[data.range.units] : "") : null;
+		let target = (data.target && data.target.type) ? i18n("Target: ").concat(kryx_rpg.targetTypes[data.target.type]) + ((data.target.units ) && (data.target.units !== "none") ? " (" + data.target.value + " " + kryx_rpg.distanceUnits[data.target.units] + ")" : "") : null;
 		let activation = (data.activation && (data.activation.type !== "") && (data.activation.type !== "none")) ? data.activation.cost + " " + data.activation.type : null;
-		let duration = (data.duration && data.duration.units) ? (data.duration.value ? data.duration.value + " " : "") + dnd5e.timePeriods[data.duration.units] : null;
+		let duration = (data.duration && data.duration.units) ? (data.duration.value ? data.duration.value + " " : "") + kryx_rpg.timePeriods[data.duration.units] : null;
 		let activationCondition = (data.activation && data.activation.condition) ? "(" + data.activation.condition + ")" : null;
 		switch(item.data.type) {
 			case "weapon":
 				properties = [
-					dnd5e.weaponTypes[data.weaponType],
+					kryx_rpg.weaponTypes[data.weaponType],
 					range,
 					target,
 					data.proficient ? "" : i18n("Not Proficient"),
@@ -838,7 +838,7 @@ export class CustomItemRoll {
 				];
 				for (const prop in data.properties) {
 					if (data.properties[prop] === true) {
-						properties.push(dnd5e.weaponProperties[prop]);
+						properties.push(kryx_rpg.weaponProperties[prop]);
 					}
 				}
 				break;
@@ -857,8 +857,8 @@ export class CustomItemRoll {
 				}
 				
 				properties = [
-					dnd5e.spellSchools[data.school],
-					dnd5e.spellLevels[data.level],
+					kryx_rpg.spellSchools[data.school],
+					kryx_rpg.spellLevels[data.level],
 					components.ritual ? i18n("Ritual") : null,
 					activation,
 					duration,
@@ -871,24 +871,24 @@ export class CustomItemRoll {
 			case "feat":
 				properties = [
 					data.requirements,
-					((data.activation.type !== "") && (data.activation.type !== "none")) ? (data.activation.cost ? data.activation.cost + " " : "") + dnd5e.abilityActivationTypes[data.activation.type] : null,
-					(data.duration.units) ? (data.duration.value ? data.duration.value + " " : "") + dnd5e.timePeriods[data.duration.units] : null,
+					((data.activation.type !== "") && (data.activation.type !== "none")) ? (data.activation.cost ? data.activation.cost + " " : "") + kryx_rpg.abilityActivationTypes[data.activation.type] : null,
+					(data.duration.units) ? (data.duration.value ? data.duration.value + " " : "") + kryx_rpg.timePeriods[data.duration.units] : null,
 					range,
-					data.target.type ? i18n("Target: ").concat(dnd5e.targetTypes[data.target.type]) + ((data.target.units ) && (data.target.units !== "none") ? " (" + data.target.value + " " + dnd5e.distanceUnits[data.target.units] + ")" : "") : null,
+					data.target.type ? i18n("Target: ").concat(kryx_rpg.targetTypes[data.target.type]) + ((data.target.units ) && (data.target.units !== "none") ? " (" + data.target.value + " " + kryx_rpg.distanceUnits[data.target.units] + ")" : "") : null,
 				];
 				break;
 			case "consumable":
 				properties = [
 					data.weight ? data.weight + " " + i18n("lbs.") : null,
-					((data.activation.type !== "") && (data.activation.type !== "none")) ? (data.activation.cost ? data.activation.cost + " " : "") + dnd5e.abilityActivationTypes[data.activation.type] : null,
-					(data.duration.units) ? (data.duration.value ? data.duration.value + " " : "") + dnd5e.timePeriods[data.duration.units] : null,
+					((data.activation.type !== "") && (data.activation.type !== "none")) ? (data.activation.cost ? data.activation.cost + " " : "") + kryx_rpg.abilityActivationTypes[data.activation.type] : null,
+					(data.duration.units) ? (data.duration.value ? data.duration.value + " " : "") + kryx_rpg.timePeriods[data.duration.units] : null,
 					range,
-					data.target.type ? i18n("Target: ").concat(dnd5e.targetTypes[data.target.type]) + ((data.target.units ) && (data.target.units !== "none") ? " (" + data.target.value + " " + dnd5e.distanceUnits[data.target.units] + ")" : "") : null,
+					data.target.type ? i18n("Target: ").concat(kryx_rpg.targetTypes[data.target.type]) + ((data.target.units ) && (data.target.units !== "none") ? " (" + data.target.value + " " + kryx_rpg.distanceUnits[data.target.units] + ")" : "") : null,
 				];
 				break;
 			case "equipment":
 				properties = [
-					dnd5e.equipmentTypes[data.armor.type],
+					kryx_rpg.equipmentTypes[data.armor.type],
 					data.equipped ? i18n("Equipped") : null,
 					data.armor.value ? data.armor.value + " " + i18n("AC") : null,
 					data.stealth ? i18n("Stealth Disadv.") : null,
@@ -897,8 +897,8 @@ export class CustomItemRoll {
 				break;
 			case "tool":
 				properties = [
-					dnd5e.proficiencyLevels[data.proficient],
-					data.ability ? dnd5e.abilities[data.ability] : null,
+					kryx_rpg.proficiencyLevels[data.proficient],
+					data.ability ? kryx_rpg.abilities[data.ability] : null,
 					data.weight ? data.weight + " lbs." : null,
 				];
 				break;
@@ -992,8 +992,8 @@ export class CustomItemRoll {
 		// Add critical threshold
 		let critThreshold = 20;
 		let characterCrit = 20;
-		try { characterCrit = Number(getProperty(itm, "actor.data.flags.dnd5e.weaponCriticalThreshold")) || 20;  }
-		catch(error) { characterCrit = itm.actor.data.flags.dnd5e.weaponCriticalThreshold || 20; }
+		try { characterCrit = Number(getProperty(itm, "actor.data.flags.kryx_rpg.weaponCriticalThreshold")) || 20;  }
+		catch(error) { characterCrit = itm.actor.data.flags.kryx_rpg.weaponCriticalThreshold || 20; }
 		
 		let itemCrit = Number(getProperty(itm, "data.flags.betterRolls5e.critRange.value")) || 20;
 		//	console.log(critThreshold, characterCrit, itemCrit);
@@ -1082,7 +1082,7 @@ export class CustomItemRoll {
 		
 		// Elven Accuracy check
 		if (numRolls == 2) {
-			if (getProperty(itm, "actor.data.flags.dnd5e.elvenAccuracy") && ["dex", "int", "wis", "cha"].includes(abl) && rollState !== "lowest") {
+			if (getProperty(itm, "actor.data.flags.kryx_rpg.elvenAccuracy") && ["dex", "int", "wis", "cha"].includes(abl) && rollState !== "lowest") {
 				numRolls = 3;
 			}
 		}
@@ -1222,9 +1222,9 @@ export class CustomItemRoll {
 			contextString = customContext || (flags.quickDamage.context && flags.quickDamage.context[damageIndex]);
 		
 		// Show "Healing" prefix only if it's not inherently a heal action
-		if (dnd5e.healingTypes[damageType]) { titleString = ""; }
+		if (kryx_rpg.healingTypes[damageType]) { titleString = ""; }
 		// Show "Damage" prefix if it's a damage roll
-		else if (dnd5e.damageTypes[damageType]) { titleString += i18n("brkr.chat.damage"); }
+		else if (kryx_rpg.damageTypes[damageType]) { titleString += i18n("brkr.chat.damage"); }
 		
 		// Title
 		let pushedTitle = false;
@@ -1244,7 +1244,7 @@ export class CustomItemRoll {
 		
 		// Damage type
 		if (dtype) { damageString.push(dtype); }
-		if (isVersatile) { damageString.push("(" + dnd5e.weaponProperties.ver + ")"); }
+		if (isVersatile) { damageString.push("(" + kryx_rpg.weaponProperties.ver + ")"); }
 		damageString = damageString.join(" ");
 		if (damagePlacement !== "0" && damageString.length > 0 && !(replaceDamage && contextString && damagePlacement == contextPlacement)) {
 			labels[damagePlacement].push(damageString);
@@ -1304,8 +1304,8 @@ export class CustomItemRoll {
 		if (critRoll.terms.length === 1 && typeof critRoll.terms[0] === "number") { return null; }
 
 		if (itm.data.type === "weapon") {
-			try { savage = itm.actor.getFlag("dnd5e", "savageAttacks"); }
-			catch(error) { savage = itm.actor.getFlag("dnd5eJP", "savageAttacks"); }
+			try { savage = itm.actor.getFlag("kryx_rpg", "savageAttacks"); }
+			catch(error) { savage = itm.actor.getFlag("kryx_rpgJP", "savageAttacks"); }
 		}
 		let add = (itm.actor && savage) ? 1 : 0;
 		critRoll.alter(1, add);
@@ -1451,7 +1451,7 @@ export class CustomItemRoll {
 
 		let divHTML = `<span ${hideDC ? 'class="hideSave"' : null} style="display:inline;line-height:inherit;">${saveData.dc}</span>`;
 		
-		let saveLabel = `${i18n("brkr.buttons.saveDC")} ` + divHTML + ` ${dnd5e.abilities[saveData.ability]}`;
+		let saveLabel = `${i18n("brkr.buttons.saveDC")} ` + divHTML + ` ${kryx_rpg.abilities[saveData.ability]}`;
 		let button = {
 			type: "saveDC",
 			html: await renderTemplate("modules/betterrolls_kryx_rpg/templates/red-save-button.html", {data: saveData, saveLabel: saveLabel})
@@ -1544,7 +1544,7 @@ export class CustomItemRoll {
 				window.PH = {};
 				window.PH.actor = actor;
 				window.PH.item = item;
-				const spellFormData = await game.dnd5e.applications.AbilityUseDialog.create(item);
+				const spellFormData = await game.kryx_rpg.applications.AbilityUseDialog.create(item);
 				lvl = spellFormData.get("level");
 				consume = Boolean(spellFormData.get("consumeSlot"));
 				placeTemplate = Boolean(spellFormData.get("placeTemplate"));
@@ -1586,7 +1586,7 @@ export class CustomItemRoll {
 	placeTemplate() {
 		let item = this.item;
 		if (item.hasAreaTarget) {
-			const template = game.dnd5e.canvas.AbilityTemplate.fromItem(item);
+			const template = game.kryx_rpg.canvas.AbilityTemplate.fromItem(item);
 			if ( template ) template.drawPreview(event);
 			if (item.actor && item.actor.sheet) {
 				if (item.sheet.rendered) item.sheet.minimize();

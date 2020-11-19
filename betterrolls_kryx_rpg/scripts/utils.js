@@ -12,6 +12,6 @@ export class Utils {
 	}
 
 	static isHalfling(actor) {
-		return getProperty(actor, "data.flags.dnd5e.halflingLucky");
+		return getProperty(actor, "data.flags.kryx_rpg.halflingLucky");
 	}
 }

@@ -1,4 +1,4 @@
-import { KRYX_RPG } from "../../../systems/dnd5e/module/config.js";
+import { KRYX_RPG } from "../../../systems/kryx_rpg/module/config.js";
 import { BetterRollsHooks } from "./hooks.js";
 import { CustomRoll, CustomItemRoll } from "./custom-roll.js";
 
@@ -94,7 +94,7 @@ export function isCheck(item) {
 	return item.data.type === "tool" || typeof item.data.data?.proficient === "number";
 }
 
-let dnd5e = KRYX_RPG;
+let kryx_rpg = KRYX_RPG;
 
 function getQuickDescriptionDefault() {
 	return game.settings.get("betterrolls_kryx_rpg", "quickDefaultDescriptionEnabled");
@@ -187,7 +187,7 @@ CONFIG.betterRolls5e = {
 
 Hooks.on(`ready`, () => {
 	// Make a combined damage type array that includes healing
-	CONFIG.betterRolls5e.combinedDamageTypes = mergeObject(duplicate(dnd5e.damageTypes), dnd5e.healingTypes);
+	CONFIG.betterRolls5e.combinedDamageTypes = mergeObject(duplicate(kryx_rpg.damageTypes), kryx_rpg.healingTypes);
 	
 	// Updates crit text from the dropdown.
 	let critText = game.settings.get("betterrolls_kryx_rpg", "critString")
@@ -258,7 +258,7 @@ async function addButtonsToItemLi(li, actor, buttonContainer) {
             if (isAttack(item)) buttons.append(`<span class="tag"><button data-action="attackRoll">${i18n("brkr.buttons.attack")}</button></span>`);
             if (isSave(item)) {
                 let saveData = getSave(item);
-                buttons.append(`<span class="tag"><button data-action="save">${i18n("brkr.buttons.saveDC")} ${saveData.dc} ${dnd5e.abilities[saveData.ability]}</button></span>`);
+                buttons.append(`<span class="tag"><button data-action="save">${i18n("brkr.buttons.saveDC")} ${saveData.dc} ${kryx_rpg.abilities[saveData.ability]}</button></span>`);
             }
             if (itemData.damage.parts.length > 0) {
                 buttons.append(`<span class="tag"><button data-action="damageRoll" data-value="all">${i18n("brkr.buttons.damage")}</button></span>`);
@@ -272,7 +272,7 @@ async function addButtonsToItemLi(li, actor, buttonContainer) {
 						let damageString = (contextEnabled && flags.quickDamage.context[i]) || CONFIG.betterRolls5e.combinedDamageTypes[itemData.damage.parts[i][1]];
 						buttons.append(`<span class="tag"><button data-action="damageRoll" data-value=${i}>${i}: ${damageString}</button></span>`);
 						if (i === 0 && itemData.damage.versatile) {
-							buttons.append(`<span class="tag"><button data-action="verDamageRoll" data-value=0>${0}: ${damageString} (${dnd5e.weaponProperties.ver})</button></span>`);
+							buttons.append(`<span class="tag"><button data-action="verDamageRoll" data-value=0>${0}: ${damageString} (${kryx_rpg.weaponProperties.ver})</button></span>`);
 						}
 					}
 				}
@@ -494,8 +494,8 @@ export function changeRollsToDual (actor, html, data, params) {
 				CustomRoll.fullRollAttribute(actor, ability, "save");
 			} else {
 				new Dialog({
-					title: `${i18n(dnd5e.abilities[ability])} ${i18n("Ability Roll")}`,
-					content: `<p><span style="font-weight: bold;">${i18n(dnd5e.abilities[ability])}:</span> ${i18n("What type of roll?")}</p>`,
+					title: `${i18n(kryx_rpg.abilities[ability])} ${i18n("Ability Roll")}`,
+					content: `<p><span style="font-weight: bold;">${i18n(kryx_rpg.abilities[ability])}:</span> ${i18n("What type of roll?")}</p>`,
 					buttons: {
 						test: {
 							label: i18n("Ability Check"),
@@ -616,7 +616,7 @@ export function BetterRolls() {
 				type: "script",
 				img: item.data.img,
 				command: command(),
-				flags: {"dnd5e.itemMacro": true}
+				flags: {"kryx_rpg.itemMacro": true}
 			}, {displaySheet: false});
 		}
 		game.user.assignHotbarMacro(macro, slot);
