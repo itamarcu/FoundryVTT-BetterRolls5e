@@ -1,4 +1,4 @@
-import { addItemSheetButtons, changeRollsToDual, i18n } from "./betterrolls5e.js";
+import { addItemSheetButtons, changeRollsToDual, i18n } from "./betterrolls_kryx_rpg.js";
 import { addBetterRollsContent } from "./item-tab.js";
 
 

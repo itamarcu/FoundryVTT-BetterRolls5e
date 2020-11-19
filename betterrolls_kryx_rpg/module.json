@@ -45,7 +45,7 @@
 	],
 	"systems": ["kryx_rpg"],
 	"esmodules": [
-		"./scripts/betterrolls5e.js",
+		"./scripts/betterrolls_kryx_rpg.js",
 		"./scripts/custom-roll.js",
 		"./scripts/init.js",
 		"./scripts/chat-damage-buttons.js",
@@ -53,7 +53,7 @@
 		"./scripts/hooks.js",
 		"./scripts/item-tab.js"
 	],
-	"styles": ["./css/betterrolls5e.css"],
+	"styles": ["./css/betterrolls_kryx_rpg.css"],
 	"packs": [],
 	"url": "https://github.com/itamarcu/FoundryVTT-BetterRollsKryxRPG/tree/master/betterrolls_kryx_rpg",
 	"manifest": "https://raw.githubusercontent.com/itamarcu/FoundryVTT-BetterRollsKryxRPG/master/betterrolls_kryx_rpg/module.json",

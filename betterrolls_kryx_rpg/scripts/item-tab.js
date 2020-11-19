@@ -1,4 +1,4 @@
-import { redUpdateFlags, i18n, isAttack, isSave } from "./betterrolls5e.js";
+import { redUpdateFlags, i18n, isAttack, isSave } from "./betterrolls_kryx_rpg.js";
 
 let activate = false;
 

@@ -1,4 +1,4 @@
-import { i18n, hasMaestroSound, isAttack, isSave, getSave, isCheck, redUpdateFlags, getWhisperData, createMessage } from "./betterrolls5e.js";
+import { i18n, hasMaestroSound, isAttack, isSave, getSave, isCheck, redUpdateFlags, getWhisperData, createMessage } from "./betterrolls_kryx_rpg.js";
 import { Utils } from "./utils.js";
 
 import { DND5E } from "../../../systems/dnd5e/module/config.js";

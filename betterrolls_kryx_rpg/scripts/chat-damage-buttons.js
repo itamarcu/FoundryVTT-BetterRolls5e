@@ -1,4 +1,4 @@
-import { i18n, getTargetActors } from "./betterrolls5e.js";
+import { i18n, getTargetActors } from "./betterrolls_kryx_rpg.js";
 
 Hooks.on('renderChatMessage', (message, html, data) => {
 	if (!game.settings.get("betterrolls_kryx_rpg", "chatDamageButtonsEnabled")) { return; }
