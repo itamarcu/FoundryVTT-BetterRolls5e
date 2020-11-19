@@ -2,7 +2,7 @@
 	"I18N.MAINTAINERS": ["Red Reign"],
 	
 	"Better Rolls": "Better Rolls",
-	"Better Rolls for 5e": "Better Rolls for 5e",
+	"Better Rolls for Kryx RPG": "Better Rolls for Kryx RPG",
 	
 	"brkr.diceEnabled.name": "Enable Better Rolls",
 	"brkr.diceEnabled.hint": "Enables the improved dice outputs for DnD5e. Affects all ability checks, saving throws, items, spells, and features on the sheet. Requires reopening the sheet.",

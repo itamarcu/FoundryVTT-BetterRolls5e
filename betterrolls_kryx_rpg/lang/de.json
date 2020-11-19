@@ -2,7 +2,7 @@
 	"I18N.MAINTAINERS": ["Red Reign"],
 	
 	"Better Rolls": "Besser Würfeln",
-	"Better Rolls for 5e": "Besser Würfeln für 5e",
+	"Better Rolls for Kryx RPG": "Besser Würfeln für Kryx RPG",
 	
 	"brkr.diceEnabled.name": "Aktiviere besseres Würfeln",
 	"brkr.diceEnabled.hint": "Aktiviert die verbesserten Würfelausgaben für DnD5e. Betrifft alle Würfe für Attributsproben, Rettungswürfe, Gegenstände, Zauber und Merkmale auf dem Charakterblatt Erfordert das erneute Öffnen des Charakterblattes.",

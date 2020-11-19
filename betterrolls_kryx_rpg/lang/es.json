@@ -1,7 +1,7 @@
 {
     "I18N.MAINTAINERS": ["Cosmo Corban"],
     "Better Rolls": "Better Rolls",
-    "Better Rolls for 5e": "Better Rolls para 5e",
+    "Better Rolls for Kryx RPG": "Better Rolls para Kryx RPG",
     "brkr.diceEnabled.name": "Habilitar Better Rolls",
     "brkr.diceEnabled.hint": "Mejora como se muestran las tiradas en DnD5e. Afecta a todas las pruebas de característica, tiradas de salvación, elementos, conjuros y características en la hoja. Requiere reabrir la hoja.",
     "brkr.rollButtonsEnabled.name": "Añadir Botones de Tiradas a la Hoja",

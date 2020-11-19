@@ -2,7 +2,7 @@
 	"I18N.MAINTAINERS": ["Asami"],
 	
 	"Better Rolls": "拡張ロール",
-	"Better Rolls for 5e": "Better Rolls for 5e",
+	"Better Rolls for Kryx RPG": "Better Rolls for Kryx RPG",
 	
 	"brkr.diceEnabled.name": "MODを使用する",
 	"brkr.diceEnabled.hint": "DnD5e用の拡張されたロール表示を使用するようになります。シートから出力される能力値判定、セーヴィング･スロー、アイテム、呪文、特徴などに適用されます。すでにシートを開いている場合、再度、開き直す必要があります。",

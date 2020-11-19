@@ -2,7 +2,7 @@
 	"I18N.MAINTAINERS": ["KLO"],
 	
 	"Better Rolls": "Better Rolls",
-	"Better Rolls for 5e": "D&D 5판을 위한 개선된 굴림 모듈",
+	"Better Rolls for Kryx RPG": "D&D 5판을 위한 개선된 굴림 모듈",
 	
 	"brkr.diceEnabled.name": "Better Rolls 활성화",
 	"brkr.diceEnabled.hint": "D&D 5판에 대해 개선된 주사위 굴림을 활성화한다. 모든 능력 판정, 내성 굴림, 아이템, 주문 및 기능에 영향을 미친다. 시트를 다시 열어야 한다.",
