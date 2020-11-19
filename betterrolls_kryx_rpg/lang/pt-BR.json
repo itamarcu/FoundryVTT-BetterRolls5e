@@ -5,7 +5,7 @@
   "Better Rolls for Kryx RPG": "Melhores Rolagens para Kryx RPG",
 
   "brkr.diceEnabled.name": "Habilitar Melhores Rolagens",
-  "brkr.diceEnabled.hint": "Ativa as saídas aprimoradas de dados para o DnD5e. Afeta todas as verificações de habilidade, testes de resistência, itens, feitiços e recursos na ficha. Requer reabrir a ficha. ",
+  "brkr.diceEnabled.hint": "Ativa as saídas aprimoradas de dados para o Kryx RPG. Afeta todas as verificações de habilidade, testes de resistência, itens, feitiços e recursos na ficha. Requer reabrir a ficha. ",
   "brkr.queryAdvantageEnabled.name": "Consulta para (Dis)Vantagens",
   "brkr.queryAdvantageEnabled.hint": "Adicionar uma consulta para rolagens do tipo Vantagem/Normal/Desvantagem. Ctrl + Shift pode ser usado.",
   "brkr.rollButtonsEnabled.name": "Adicionar Melhores Rolagens na Ficha",

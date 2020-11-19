@@ -5,7 +5,7 @@
 	"Better Rolls for Kryx RPG": "Better Rolls for Kryx RPG",
 	
 	"brkr.diceEnabled.name": "Enable Better Rolls",
-	"brkr.diceEnabled.hint": "Enables the improved dice outputs for DnD5e. Affects all ability checks, saving throws, items, spells, and features on the sheet. Requires reopening the sheet.",
+	"brkr.diceEnabled.hint": "Enables the improved dice outputs for Kryx RPG. Affects all ability checks, saving throws, items, spells, and features on the sheet. Requires reopening the sheet.",
 	"brkr.queryAdvantageEnabled.name": "Query for (Dis)Advantage",
 	"brkr.queryAdvantageEnabled.hint": "Adds a Query for Advantage/Normal/Disadvantage roll types. Ctrl + Shift may still be used.",
 	"brkr.rollButtonsEnabled.name": "Add Roll Buttons to Sheet",

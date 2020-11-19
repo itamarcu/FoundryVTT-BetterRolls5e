@@ -5,7 +5,7 @@
 	"Better Rolls for Kryx RPG": "Better Rolls for Kryx RPG",
 	
 	"brkr.diceEnabled.name": "MODを使用する",
-	"brkr.diceEnabled.hint": "DnD5e用の拡張されたロール表示を使用するようになります。シートから出力される能力値判定、セーヴィング･スロー、アイテム、呪文、特徴などに適用されます。すでにシートを開いている場合、再度、開き直す必要があります。",
+	"brkr.diceEnabled.hint": "Kryx RPG用の拡張されたロール表示を使用するようになります。シートから出力される能力値判定、セーヴィング･スロー、アイテム、呪文、特徴などに適用されます。すでにシートを開いている場合、再度、開き直す必要があります。",
 	"brkr.rollButtonsEnabled.name": "シートにロールボタンを追加する",
 	"brkr.rollButtonsEnabled.hint": "アイテム、呪文、特徴などの内容を確認する時、チャットに出力するためのボタンを追加します。この機能はすでにそのボタンを追加するMODとは競合する可能性があります。シートを開き直す必要があります。",
 	"brkr.imageButtonEnabled.name": "アイテム画像からロールする",

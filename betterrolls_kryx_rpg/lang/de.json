@@ -5,7 +5,7 @@
 	"Better Rolls for Kryx RPG": "Besser Würfeln für Kryx RPG",
 	
 	"brkr.diceEnabled.name": "Aktiviere besseres Würfeln",
-	"brkr.diceEnabled.hint": "Aktiviert die verbesserten Würfelausgaben für DnD5e. Betrifft alle Würfe für Attributsproben, Rettungswürfe, Gegenstände, Zauber und Merkmale auf dem Charakterblatt Erfordert das erneute Öffnen des Charakterblattes.",
+	"brkr.diceEnabled.hint": "Aktiviert die verbesserten Würfelausgaben für Kryx RPG. Betrifft alle Würfe für Attributsproben, Rettungswürfe, Gegenstände, Zauber und Merkmale auf dem Charakterblatt Erfordert das erneute Öffnen des Charakterblattes.",
 	"brkr.rollButtonsEnabled.name": "Würfelbuttons zum Blatt hinzufügen",
 	"brkr.rollButtonsEnabled.hint": "Fügt Buttons zu Gegenständen, Zaubern und Merkmalen auf dem Blatt hinzu, die angezeigt werden, wenn der Gegenstand erweitert wird. Möglicherweise inkompatibel mit den Buttons des Modules \"Item Sheet Buttons\". Erfordert ein erneutes Öffnen des Blattes.",
 	"brkr.imageButtonEnabled.name": "Element-Bild automatisch würfeln lassen",
