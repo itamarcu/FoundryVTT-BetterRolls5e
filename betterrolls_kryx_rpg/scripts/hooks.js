@@ -71,7 +71,7 @@ Hooks.on("renderChatMessage", (message, html, data) => {
 
 	let actor = game.actors.get(message.data.speaker.actor);
 	if ((!actor && !game.user.isGM) || actor?.permission != 3) {
-		html.find(".hideSave").text(i18n("br5e.hideDC.string"));
+		html.find(".hideSave").text(i18n("brkr.hideDC.string"));
 	}
 });
 

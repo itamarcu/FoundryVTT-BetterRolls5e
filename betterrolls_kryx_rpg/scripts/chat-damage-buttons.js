@@ -8,10 +8,10 @@ Hooks.on('renderChatMessage', (message, html, data) => {
 	
 	function addButtons(dmgElement) {
         // creating the buttons and container
-        let fullDamageButton = $(`<button data-modifier="1"><i class="fas fa-user-minus" title="${i18n("br5e.chat.damageButtons.fullDamage.hint")}"></i></button>`);
-        let halfDamageButton = $(`<button data-modifier="0.5"><i class="fas fa-user-shield" title="${i18n("br5e.chat.damageButtons.halfDamage.hint")}"></i></button>`);
-        let doubleDamageButton = $(`<button data-modifier="2"><i class="fas fa-user-injured" title="${i18n("br5e.chat.damageButtons.doubleDamage.hint")}"></i></button>`);
-        let fullHealingButton = $(`<button data-modifier="-1"><i class="fas fa-user-plus" title="${i18n("br5e.chat.damageButtons.healing.hint")}"></i></button>`);
+        let fullDamageButton = $(`<button data-modifier="1"><i class="fas fa-user-minus" title="${i18n("brkr.chat.damageButtons.fullDamage.hint")}"></i></button>`);
+        let halfDamageButton = $(`<button data-modifier="0.5"><i class="fas fa-user-shield" title="${i18n("brkr.chat.damageButtons.halfDamage.hint")}"></i></button>`);
+        let doubleDamageButton = $(`<button data-modifier="2"><i class="fas fa-user-injured" title="${i18n("brkr.chat.damageButtons.doubleDamage.hint")}"></i></button>`);
+        let fullHealingButton = $(`<button data-modifier="-1"><i class="fas fa-user-plus" title="${i18n("brkr.chat.damageButtons.healing.hint")}"></i></button>`);
 
         let btnContainer = $('<span class="dmgBtn-container-br"></span>');
 
@@ -85,17 +85,17 @@ async function applyCritDamage(dmg, critdmg, position) {
         options.width = 100;
         
         let d = new Dialog({
-            title: i18n("br5e.chat.damageButtons.critPrompt.title"),
+            title: i18n("brkr.chat.damageButtons.critPrompt.title"),
             content: "",
             buttons: {
                 one: {
                     icon: '<i class="fas fa-check"></i>',
-                    label: i18n("br5e.chat.damageButtons.critPrompt.yes"),
+                    label: i18n("brkr.chat.damageButtons.critPrompt.yes"),
                     callback: () => { resolve(dmg + critdmg); }
                 },
                 two: {
                     icon: '<i class="fas fa-times"></i>',
-                    label: i18n("br5e.chat.damageButtons.critPrompt.no"),
+                    label: i18n("brkr.chat.damageButtons.critPrompt.no"),
                     callback: () => { resolve(dmg); }
                 }
             },

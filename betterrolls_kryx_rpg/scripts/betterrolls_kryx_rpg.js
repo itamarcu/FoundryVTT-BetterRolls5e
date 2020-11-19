@@ -191,7 +191,7 @@ Hooks.on(`ready`, () => {
 	
 	// Updates crit text from the dropdown.
 	let critText = game.settings.get("betterrolls_kryx_rpg", "critString")
-	if (critText.includes("br5e.critString")) {
+	if (critText.includes("brkr.critString")) {
 		critText = i18n(critText);
 		game.settings.set("betterrolls_kryx_rpg", "critString", critText);
 	}
@@ -253,17 +253,17 @@ async function addButtonsToItemLi(li, actor, buttonContainer) {
         case 'spell':
         case 'consumable':
             buttonsWereAdded = true;
-            if (diceEnabled) buttons.append(`<span class="tag"><button data-action="quickRoll">${i18n("br5e.buttons.roll")}</button></span>`);
-            if (diceEnabled) buttons.append(`<span class="tag"><button data-action="altRoll">${i18n("br5e.buttons.altRoll")}</button></span>`);
-            if (isAttack(item)) buttons.append(`<span class="tag"><button data-action="attackRoll">${i18n("br5e.buttons.attack")}</button></span>`);
+            if (diceEnabled) buttons.append(`<span class="tag"><button data-action="quickRoll">${i18n("brkr.buttons.roll")}</button></span>`);
+            if (diceEnabled) buttons.append(`<span class="tag"><button data-action="altRoll">${i18n("brkr.buttons.altRoll")}</button></span>`);
+            if (isAttack(item)) buttons.append(`<span class="tag"><button data-action="attackRoll">${i18n("brkr.buttons.attack")}</button></span>`);
             if (isSave(item)) {
                 let saveData = getSave(item);
-                buttons.append(`<span class="tag"><button data-action="save">${i18n("br5e.buttons.saveDC")} ${saveData.dc} ${dnd5e.abilities[saveData.ability]}</button></span>`);
+                buttons.append(`<span class="tag"><button data-action="save">${i18n("brkr.buttons.saveDC")} ${saveData.dc} ${dnd5e.abilities[saveData.ability]}</button></span>`);
             }
             if (itemData.damage.parts.length > 0) {
-                buttons.append(`<span class="tag"><button data-action="damageRoll" data-value="all">${i18n("br5e.buttons.damage")}</button></span>`);
+                buttons.append(`<span class="tag"><button data-action="damageRoll" data-value="all">${i18n("brkr.buttons.damage")}</button></span>`);
                 if (itemData.damage.versatile) {
-                    buttons.append(`<span class="tag"><button data-action="verDamageRoll" data-value="all">${i18n("br5e.buttons.verDamage")}</button></span>`);
+                    buttons.append(`<span class="tag"><button data-action="verDamageRoll" data-value="all">${i18n("brkr.buttons.verDamage")}</button></span>`);
                 }
                 // Make a damage button for each damage type
 				if (itemData.damage.parts.length > 1) {
@@ -279,16 +279,16 @@ async function addButtonsToItemLi(li, actor, buttonContainer) {
 			}
 			if (itemData.formula.length > 0) {
 				let otherString = contextEnabled && flags.quickOther.context;
-				if (!otherString) { otherString = "br5e.settings.otherFormula"; }
+				if (!otherString) { otherString = "brkr.settings.otherFormula"; }
 				buttons.append(`<span class="tag"><button data-action="otherFormulaRoll">${otherString}</button></span>`);
 			}
             break;
         case 'tool':
             buttonsWereAdded = true;
-            buttons.append(`<span class="tag"><button data-action="toolCheck" data-ability="${itemData.ability.value}">${i18n("br5e.buttons.itemUse")} ${item.name}</button></span>`);
+            buttons.append(`<span class="tag"><button data-action="toolCheck" data-ability="${itemData.ability.value}">${i18n("brkr.buttons.itemUse")} ${item.name}</button></span>`);
 			if (itemData.formula && itemData.formula.length > 0) {
 				let otherString = contextEnabled && flags.quickOther.context;
-				if (!otherString) { otherString = "br5e.settings.otherFormula"; }
+				if (!otherString) { otherString = "brkr.settings.otherFormula"; }
 				buttons.append(`<span class="tag"><button data-action="otherFormulaRoll">${otherString}</button></span>`);
 			}
             break;
@@ -297,10 +297,10 @@ async function addButtonsToItemLi(li, actor, buttonContainer) {
     if (buttonsWereAdded) { buttons.append(`<br>`); }
 	
     // Add info button
-    if (diceEnabled) { buttons.append(`<span class="tag"><button data-action="infoRoll">${i18n("br5e.buttons.info")}</button></span>`); }
+    if (diceEnabled) { buttons.append(`<span class="tag"><button data-action="infoRoll">${i18n("brkr.buttons.info")}</button></span>`); }
 	
     // Add default roll button
-    buttons.append(`<span class="tag"><button data-action="vanillaRoll">${i18n("br5e.buttons.defaultSheetRoll")}</button></span>`);
+    buttons.append(`<span class="tag"><button data-action="vanillaRoll">${i18n("brkr.buttons.defaultSheetRoll")}</button></span>`);
 	
     //if (((item.data.data.damage !== undefined) && item.data.data.damage.value) || ((item.data.data.damage2 !== undefined) && item.data.data.damage2.value) || (chatData.isAttack) || (chatData.isSave) || (chatData.hasCharges)) {buttonsWereAdded = true;}
     if (buttonsWereAdded) { buttons.append(`<br><header style="margin-top:6px"></header>`); }
@@ -625,10 +625,10 @@ export function BetterRolls() {
 	// Performs a vanilla roll message, searching the actor and item by ID.
 	function vanillaRoll(actorId, itemId) {
 		let actor = getActorById(actorId);
-		if (!actor) { return ui.notifications.warn(`${i18n("br5e.error.noActorWithId")}`); }
+		if (!actor) { return ui.notifications.warn(`${i18n("brkr.error.noActorWithId")}`); }
 		let item = actor.getOwnedItem(itemId);
-		if (!item) { return ui.notifications.warn(`${i18n("br5e.error.noItemWithId")}`); }
-		if (actor.permission != 3) { return ui.notifications.warn(`${i18n("br5e.error.noActorPermission")}`); }
+		if (!item) { return ui.notifications.warn(`${i18n("brkr.error.noItemWithId")}`); }
+		if (actor.permission != 3) { return ui.notifications.warn(`${i18n("brkr.error.noActorPermission")}`); }
 		item.roll()
 	};
 	
@@ -637,28 +637,28 @@ export function BetterRolls() {
 		let speaker = ChatMessage.getSpeaker();
 		let actor = getActorById(speaker.actor);
 		let item = actor ? actor.items.find(i => i.name === itemName) : null;
-		if (!actor) { return ui.notifications.warn(`${i18n("br5e.error.noSelectedActor")}`); }
-		else if (!item) { return ui.notifications.warn(`${actor.name} ${i18n("br5e.error.noKnownItemOnActor")} ${itemName}`); }
+		if (!actor) { return ui.notifications.warn(`${i18n("brkr.error.noSelectedActor")}`); }
+		else if (!item) { return ui.notifications.warn(`${actor.name} ${i18n("brkr.error.noKnownItemOnActor")} ${itemName}`); }
 		new CustomItemRoll(item, {event:event, preset:(isAlt(event) ? 1 : 0)}).toMessage();
 	};
 	
 	// Performs a Quick Roll, searching the actor and item by ID.
 	function quickRollById(actorId, itemId) {
 		let actor = getActorById(actorId);
-		if (!actor) { return ui.notifications.warn(`${i18n("br5e.error.noActorWithId")}`); }
+		if (!actor) { return ui.notifications.warn(`${i18n("brkr.error.noActorWithId")}`); }
 		let item = actor.getOwnedItem(itemId);
-		if (!item) { return ui.notifications.warn(`${i18n("br5e.error.noItemWithId")}`); }
-		if (actor.permission != 3) { return ui.notifications.warn(`${i18n("br5e.error.noActorPermission")}`); }
+		if (!item) { return ui.notifications.warn(`${i18n("brkr.error.noItemWithId")}`); }
+		if (actor.permission != 3) { return ui.notifications.warn(`${i18n("brkr.error.noActorPermission")}`); }
 		new CustomItemRoll(item, {event:event, preset:(isAlt(event) ? 1 : 0)}).toMessage();
 	};
 	
 	// Performs a Quick Roll, searching the actor and item by name.
 	function quickRollByName(actorName, itemName) {
 		let actor = getActorByName(actorName);
-		if (!actor) { return ui.notifications.warn(`${i18n("br5e.error.noKnownActorWithName")}`); }
+		if (!actor) { return ui.notifications.warn(`${i18n("brkr.error.noKnownActorWithName")}`); }
 		let item = actor.items.find(i => i.name === itemName);
-		if (!item) { return ui.notifications.warn(`${actor.name} ${i18n("br5e.error.noKnownItemOnActor")} ${itemName}`); }
-		if (actor.permission != 3) { return ui.notifications.warn(`${i18n("br5e.error.noActorPermission")}`); }
+		if (!item) { return ui.notifications.warn(`${actor.name} ${i18n("brkr.error.noKnownItemOnActor")} ${itemName}`); }
+		if (actor.permission != 3) { return ui.notifications.warn(`${i18n("brkr.error.noActorPermission")}`); }
 		new CustomItemRoll(item, {event:event, preset:(isAlt(event) ? 1 : 0)}).toMessage();
 	};
 	

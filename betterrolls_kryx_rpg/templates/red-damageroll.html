@@ -1,6 +1,6 @@
 <div class="dice-roll red-dual">
     {{#if damagetop}}
-    <div class="br5e-roll-label">{{damagetop}}</div>
+    <div class="brkr-roll-label">{{damagetop}}</div>
     {{/if}}
     <div class="dice-result">
 		<div class="dice-formula dice-tooltip">{{formula}}</div>
@@ -9,7 +9,7 @@
 		</div>
 		<div class="dice-row">
 			<h4 class="dice-total dice-row-item red-damage" data-damageType="{{damageType}}"><div class="red-base-die inline red-base-damage" data-value="{{lefttotal}}">{{lefttotal}}</div>{{#if righttotal}} + <div class="red-extra-die inline red-crit-damage" data-value="{{righttotal}}">{{righttotal}}</div>
-			{{#if crittext}}<div class="inline br5e-roll-label">{{crittext}}</div>{{/if}}
+			{{#if crittext}}<div class="inline brkr-roll-label">{{crittext}}</div>{{/if}}
 			{{/if}}
 			{{#if damagemid}}<div class="damage-type" style="line-height:12px">{{damagemid}}</div> {{/if}}
 			</h4>

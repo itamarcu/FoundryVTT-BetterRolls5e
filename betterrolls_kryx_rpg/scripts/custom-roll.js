@@ -124,18 +124,18 @@ export class CustomRoll {
 			}
 			return new Promise(resolve => {
 				new Dialog({
-					title: i18n("br5e.querying.title"),
+					title: i18n("brkr.querying.title"),
 					buttons: {
 						disadvantage: {
-							label: i18n("br5e.querying.disadvantage"),
+							label: i18n("brkr.querying.disadvantage"),
 							callback: () => resolve({adv:0, disadv:1})
 						},
 						normal: {
-							label: i18n("br5e.querying.normal"),
+							label: i18n("brkr.querying.normal"),
 							callback: () => resolve({adv:0, disadv:0})
 						},
 						advantage: {
-							label: i18n("br5e.querying.advantage"),
+							label: i18n("brkr.querying.advantage"),
 							callback: () => resolve({adv:1, disadv:0})
 						}
 					}
@@ -268,10 +268,10 @@ export class CustomRoll {
 		
 		if (rollType === "check") {
 			multiRoll = await CustomRoll.rollAbilityCheck(actor, abl, params);
-			titleString = `${i18n(label)} ${i18n("br5e.chat.check")}`;
+			titleString = `${i18n(label)} ${i18n("brkr.chat.check")}`;
 		} else if (rollType === "save") {
 			multiRoll = await CustomRoll.rollAbilitySave(actor, abl, params);
-			titleString = `${i18n(label)} ${i18n("br5e.chat.save")}`;
+			titleString = `${i18n(label)} ${i18n("brkr.chat.save")}`;
 		}
 
 		// let titleImage = ((actor.data.img == DEFAULT_TOKEN) || actor.data.img == "" || actor.data.img.includes("*")) ? (actor.token && actor.token.data ? actor.token.data.img : actor.data.token.img) : actor.data.img;
@@ -750,7 +750,7 @@ export class CustomItemRoll {
 	
 	
 	/*
-	* Updates the rollRequests based on the br5e flags.
+	* Updates the rollRequests based on the brkr flags.
 	*/
 	updateForPreset() {
 		let item = this.item,
@@ -844,16 +844,16 @@ export class CustomItemRoll {
 				break;
 			case "spell":
 				// Spell attack labels
-				data.damageLabel = data.actionType === "heal" ? i18n("br5e.chat.healing") : i18n("br5e.chat.damage");
+				data.damageLabel = data.actionType === "heal" ? i18n("brkr.chat.healing") : i18n("brkr.chat.damage");
 				data.isAttack = data.actionType === "attack";
 				
 				let components = data.components,
 					componentString = "";
-				if (components.vocal) { componentString += i18n("br5e.chat.abrVocal"); }
-				if (components.somatic) { componentString += i18n("br5e.chat.abrSomatic"); }
+				if (components.vocal) { componentString += i18n("brkr.chat.abrVocal"); }
+				if (components.somatic) { componentString += i18n("brkr.chat.abrSomatic"); }
 				if (components.material) { 
-					componentString += i18n("br5e.chat.abrMaterial");
-					if (data.materials.value) { componentString += " (" + data.materials.value + (data.materials.consumed ? i18n("br5e.chat.consumedBySpell") : "") + ")"; }
+					componentString += i18n("brkr.chat.abrMaterial");
+					if (data.materials.value) { componentString += " (" + data.materials.value + (data.materials.consumed ? i18n("brkr.chat.consumedBySpell") : "") + ")"; }
 				}
 				
 				properties = [
@@ -981,7 +981,7 @@ export class CustomItemRoll {
 		// Prepare roll data
 		let itemData = itm.data.data,
 			actorData = itm.actor.data.data,
-			title = (this.config.rollTitlePlacement !== "0") ? i18n("br5e.chat.attack") : null,
+			title = (this.config.rollTitlePlacement !== "0") ? i18n("brkr.chat.attack") : null,
 			parts = [],
 			rollData = duplicate(actorData);
 
@@ -1224,7 +1224,7 @@ export class CustomItemRoll {
 		// Show "Healing" prefix only if it's not inherently a heal action
 		if (dnd5e.healingTypes[damageType]) { titleString = ""; }
 		// Show "Damage" prefix if it's a damage roll
-		else if (dnd5e.damageTypes[damageType]) { titleString += i18n("br5e.chat.damage"); }
+		else if (dnd5e.damageTypes[damageType]) { titleString += i18n("brkr.chat.damage"); }
 		
 		// Title
 		let pushedTitle = false;
@@ -1399,7 +1399,7 @@ export class CustomItemRoll {
 			};
 			
 		// Title
-		let titleString = i18n("br5e.chat.other"),
+		let titleString = i18n("brkr.chat.other"),
 			contextString = flags.quickOther.context;
 		
 		let pushedTitle = false;
@@ -1451,7 +1451,7 @@ export class CustomItemRoll {
 
 		let divHTML = `<span ${hideDC ? 'class="hideSave"' : null} style="display:inline;line-height:inherit;">${saveData.dc}</span>`;
 		
-		let saveLabel = `${i18n("br5e.buttons.saveDC")} ` + divHTML + ` ${dnd5e.abilities[saveData.ability]}`;
+		let saveLabel = `${i18n("brkr.buttons.saveDC")} ` + divHTML + ` ${dnd5e.abilities[saveData.ability]}`;
 		let button = {
 			type: "saveDC",
 			html: await renderTemplate("modules/betterrolls_kryx_rpg/templates/red-save-button.html", {data: saveData, saveLabel: saveLabel})
@@ -1466,7 +1466,7 @@ export class CustomItemRoll {
 		// Prepare roll data
 		let itemData = itm.data.data,
 			actorData = itm.actor.data.data,
-			title = args.title || ((this.config.rollTitlePlacement != "0") ? i18n("br5e.chat.check") : null),
+			title = args.title || ((this.config.rollTitlePlacement != "0") ? i18n("brkr.chat.check") : null),
 			parts = [],
 			rollData = duplicate(actorData);
 		rollData.item = itemData;
@@ -1525,7 +1525,7 @@ export class CustomItemRoll {
 		
 		return {
 			type: "flavor",
-			html: `<div class="br5e-roll-label br-flavor">${args.text}</div>`
+			html: `<div class="brkr-roll-label br-flavor">${args.text}</div>`
 		};
 	}
 	
@@ -1660,7 +1660,7 @@ export class CustomItemRoll {
 			console.log(remainingQ, remainingU);
 			if (remainingU < 1) {
 				remainingQ -= 1;
-				ui.notifications.warn(game.i18n.format("br5e.error.autoDestroy", {name: item.name}));
+				ui.notifications.warn(game.i18n.format("brkr.error.autoDestroy", {name: item.name}));
 				if (remainingQ >= 1) {
 					remainingU = itemData.uses.max || 0;
 				} else { remainingU = 0; }

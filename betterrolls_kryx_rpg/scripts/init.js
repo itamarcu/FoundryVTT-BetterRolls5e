@@ -8,8 +8,8 @@ Hooks.once("init", () => {
 	* Register better rolls setting
 	*/
 	game.settings.register("betterrolls_kryx_rpg", "diceEnabled", {
-		name: i18n("br5e.diceEnabled.name"),
-		hint: i18n("br5e.diceEnabled.hint"),
+		name: i18n("brkr.diceEnabled.name"),
+		hint: i18n("brkr.diceEnabled.hint"),
 		scope: "world",
 		config: true,
 		default: true,
@@ -17,16 +17,16 @@ Hooks.once("init", () => {
 	});
 	
 	game.settings.register("betterrolls_kryx_rpg", "d20Mode", {
-		name: i18n("br5e.d20Mode.name"),
-		hint: i18n("br5e.d20Mode.hint"),
+		name: i18n("brkr.d20Mode.name"),
+		hint: i18n("brkr.d20Mode.hint"),
 		scope: "world",
 		config: true,
 		default: 2,
 		type: Number,
 		choices: {
-			1: i18n("br5e.d20Mode.choices.1"),
-			2: i18n("br5e.d20Mode.choices.2"),
-			3: i18n("br5e.d20Mode.choices.3")
+			1: i18n("brkr.d20Mode.choices.1"),
+			2: i18n("brkr.d20Mode.choices.2"),
+			3: i18n("brkr.d20Mode.choices.3")
 		}
 	});
 
@@ -34,8 +34,8 @@ Hooks.once("init", () => {
 	* Query roll type in Roll20 style
 	*/
 	game.settings.register("betterrolls_kryx_rpg", "queryAdvantageEnabled", {
-		name: i18n("br5e.queryAdvantageEnabled.name"),
-		hint: i18n("br5e.queryAdvantageEnabled.hint"),
+		name: i18n("brkr.queryAdvantageEnabled.name"),
+		hint: i18n("brkr.queryAdvantageEnabled.hint"),
 		scope: "world",
 		config: true,
 		default: false,
@@ -46,8 +46,8 @@ Hooks.once("init", () => {
 	* Register added roll buttons
 	*/
 	game.settings.register("betterrolls_kryx_rpg", "rollButtonsEnabled", {
-		name: i18n("br5e.rollButtonsEnabled.name"),
-		hint: i18n("br5e.rollButtonsEnabled.hint"),
+		name: i18n("brkr.rollButtonsEnabled.name"),
+		hint: i18n("brkr.rollButtonsEnabled.hint"),
 		scope: "world",
 		config: true,
 		default: true,
@@ -58,8 +58,8 @@ Hooks.once("init", () => {
 	* Register better roll for icon
 	*/
 	game.settings.register("betterrolls_kryx_rpg", "imageButtonEnabled", {
-		name: i18n("br5e.imageButtonEnabled.name"),
-		hint: i18n("br5e.imageButtonEnabled.hint"),
+		name: i18n("brkr.imageButtonEnabled.name"),
+		hint: i18n("brkr.imageButtonEnabled.hint"),
 		scope: "world",
 		config: true,
 		default: true,
@@ -67,8 +67,8 @@ Hooks.once("init", () => {
 	});
 	
 	game.settings.register("betterrolls_kryx_rpg", "altSecondaryEnabled", {
-		name: i18n("br5e.altSecondaryEnabled.name"),
-		hint: i18n("br5e.altSecondaryEnabled.hint"),
+		name: i18n("brkr.altSecondaryEnabled.name"),
+		hint: i18n("brkr.altSecondaryEnabled.hint"),
 		scope: "world",
 		config: true,
 		default: true,
@@ -79,8 +79,8 @@ Hooks.once("init", () => {
 	* Register quick roll defaults for description
 	*/
 	game.settings.register("betterrolls_kryx_rpg", "quickDefaultDescriptionEnabled", {
-		name: i18n("br5e.quickDefaultDescriptionEnabled.name"),
-		hint: i18n("br5e.quickDefaultDescriptionEnabled.hint"),
+		name: i18n("brkr.quickDefaultDescriptionEnabled.name"),
+		hint: i18n("brkr.quickDefaultDescriptionEnabled.hint"),
 		scope: "world",
 		config: true,
 		default: false,
@@ -88,8 +88,8 @@ Hooks.once("init", () => {
 	});
 
 	game.settings.register("betterrolls_kryx_rpg", "defaultRollArt", {
-		name: i18n("br5e.defaultRollArt.name"),
-		hint: i18n("br5e.defaultRollArt.hint"),
+		name: i18n("brkr.defaultRollArt.name"),
+		hint: i18n("brkr.defaultRollArt.hint"),
 		scope: "world",
 		config: true,
 		default: "actor",
@@ -104,15 +104,15 @@ Hooks.once("init", () => {
 	* Register roll label options
 	*/
 	game.settings.register("betterrolls_kryx_rpg", "rollTitlePlacement", {
-		name: i18n("br5e.rollTitlePlacement.name"),
-		hint: i18n("br5e.rollTitlePlacement.hint"),
+		name: i18n("brkr.rollTitlePlacement.name"),
+		hint: i18n("brkr.rollTitlePlacement.hint"),
 		scope: "world",
 		config: true,
 		default: "1",
 		type: String,
 		choices: {
-			"0": i18n("br5e.damageRollPlacement.choices.0"),
-			"1": i18n("br5e.damageRollPlacement.choices.1")
+			"0": i18n("brkr.damageRollPlacement.choices.0"),
+			"1": i18n("brkr.damageRollPlacement.choices.1")
 		}
 	});
 	
@@ -120,17 +120,17 @@ Hooks.once("init", () => {
 
 	damagePlacementOptions.forEach(placementOption => {
 		game.settings.register("betterrolls_kryx_rpg", placementOption, {
-			name: i18n(`br5e.${placementOption}.name`),
-			hint: i18n(`br5e.${placementOption}.hint`),
+			name: i18n(`brkr.${placementOption}.name`),
+			hint: i18n(`brkr.${placementOption}.hint`),
 			scope: "world",
 			config: true,
 			default: "1",
 			type: String,
 			choices: {
-				"0": i18n("br5e.damageRollPlacement.choices.0"),
-				"1": i18n("br5e.damageRollPlacement.choices.1"),
-				"2": i18n("br5e.damageRollPlacement.choices.2"),
-				"3": i18n("br5e.damageRollPlacement.choices.3")
+				"0": i18n("brkr.damageRollPlacement.choices.0"),
+				"1": i18n("brkr.damageRollPlacement.choices.1"),
+				"2": i18n("brkr.damageRollPlacement.choices.2"),
+				"3": i18n("brkr.damageRollPlacement.choices.3")
 			}
 		});
 	});
@@ -139,8 +139,8 @@ Hooks.once("init", () => {
 
 	contextReplacementOptions.forEach(contextOption => {
 		game.settings.register("betterrolls_kryx_rpg", contextOption, {
-			name: i18n(`br5e.${contextOption}.name`),
-			hint: i18n(`br5e.${contextOption}.hint`),
+			name: i18n(`brkr.${contextOption}.name`),
+			hint: i18n(`brkr.${contextOption}.hint`),
 			scope: "world",
 			config: true,
 			default: false,
@@ -149,23 +149,23 @@ Hooks.once("init", () => {
 	});
 	
 	game.settings.register("betterrolls_kryx_rpg", "critBehavior", {
-		name: i18n("br5e.critBehavior.name"),
-		hint: i18n("br5e.critBehavior.hint"),
+		name: i18n("brkr.critBehavior.name"),
+		hint: i18n("brkr.critBehavior.hint"),
 		scope: "world",
 		config: true,
 		default: "1",
 		type: String,
 		choices: {
-			"0": i18n("br5e.critBehavior.choices.0"), // No Extra Damage
-			"1": i18n("br5e.critBehavior.choices.1"), // Roll Critical Damage Dice
-			"2": i18n("br5e.critBehavior.choices.2"), // Roll Base Damage, Max Critical
-			"3": i18n("br5e.critBehavior.choices.3"), // Max Base & Critical Damage
+			"0": i18n("brkr.critBehavior.choices.0"), // No Extra Damage
+			"1": i18n("brkr.critBehavior.choices.1"), // Roll Critical Damage Dice
+			"2": i18n("brkr.critBehavior.choices.2"), // Roll Base Damage, Max Critical
+			"3": i18n("brkr.critBehavior.choices.3"), // Max Base & Critical Damage
 		}
 	});
 	
 	game.settings.register("betterrolls_kryx_rpg", "critString", {
-		name: i18n("br5e.critString.name"),
-		hint: i18n("br5e.critString.hint"),
+		name: i18n("brkr.critString.name"),
+		hint: i18n("brkr.critString.hint"),
 		scope: "world",
 		config: true,
 		default: "Crit",
@@ -173,8 +173,8 @@ Hooks.once("init", () => {
 	});
 	
 	game.settings.register("betterrolls_kryx_rpg", "chatDamageButtonsEnabled", {
-		name: i18n("br5e.chatDamageButtonsEnabled.name"),
-		hint: i18n("br5e.chatDamageButtonsEnabled.hint"),
+		name: i18n("brkr.chatDamageButtonsEnabled.name"),
+		hint: i18n("brkr.chatDamageButtonsEnabled.hint"),
 		scope: "world",
 		config: true,
 		default: true,
@@ -182,8 +182,8 @@ Hooks.once("init", () => {
 	});
 	
 	game.settings.register("betterrolls_kryx_rpg", "playRollSounds", {
-		name: i18n("br5e.playRollSounds.name"),
-		hint: i18n("br5e.playRollSounds.hint"),
+		name: i18n("brkr.playRollSounds.name"),
+		hint: i18n("brkr.playRollSounds.hint"),
 		scope: "world",
 		config: true,
 		default: true,
@@ -191,16 +191,16 @@ Hooks.once("init", () => {
 	});
 	
 	game.settings.register("betterrolls_kryx_rpg", "hideDC", {
-		name: i18n("br5e.hideDC.name"),
-		hint: i18n("br5e.hideDC.hint"),
+		name: i18n("brkr.hideDC.name"),
+		hint: i18n("brkr.hideDC.hint"),
 		scope: "world",
 		config: true,
 		default: "0",
 		type: String,
 		choices: {
-			"0": i18n("br5e.hideDC.choices.0"),
-			"1": i18n("br5e.hideDC.choices.1"),
-			"2": i18n("br5e.hideDC.choices.2"),
+			"0": i18n("brkr.hideDC.choices.0"),
+			"1": i18n("brkr.hideDC.choices.1"),
+			"2": i18n("brkr.hideDC.choices.2"),
 		}
 	});
 });

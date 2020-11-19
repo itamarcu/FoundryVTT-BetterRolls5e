@@ -48,12 +48,12 @@
 	color: #11257f;
 }
 
-.br5e-roll-label {
+.brkr-roll-label {
 	text-align: center;
 	font-size: 12px;
 }
 
-.br5e-consume-box {
+.brkr-consume-box {
 	background: rgba(0, 0, 0, 0.05);
 	border: 1px solid #999;
 	border-radius: 4px;
@@ -63,7 +63,7 @@
 	justify-content: space-between;
 }
 
-.br5e-consume-title {
+.brkr-consume-title {
 	padding-left: 6px;
 	font-size: 13px;
 }
