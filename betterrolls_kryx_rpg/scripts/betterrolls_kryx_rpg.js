@@ -53,41 +53,16 @@ export function isAttack(item) {
 
 // Returns whether an item requires a saving throw
 export function isSave(item) {
-	const itemData = item.data.data,
-		isTypeSave = itemData.actionType === "save",
-		hasSaveDC = (itemData.save && itemData.save.ability) ? true : false;
-
-	return isTypeSave || hasSaveDC;
+	return item.hasSave
 }
 
 // Returns an array with the save DC of the item. If no save is written in, one is calculated.
 export function getSave(item) {
-	if (isSave(item)) {
-		let itemData = item.data.data,
-			output = {};
-		output.ability = getProperty(itemData, "save.ability");
-		// If a DC is written in, use that by default
-		if (itemData.save.dc && itemData.save.dc != 0 && itemData.save.scaling !== "spell") { output.dc = itemData.save.dc }
-		// Otherwise, calculate one
-		else {
-			// If spell DC is calculated with normal spellcasting DC, use that
-			if (item.data.type === "spell" && itemData.save.scaling == "spell") {
-				output.dc = getProperty(item.actor,"data.data.attributes.spelldc");
-			}
-			// Otherwise, calculate one
-			else {
-				let mod = null,
-					abl = null,
-					prof = item.actor.data.data.attributes.prof;
-				
-				abl = itemData.ability;
-				if (abl) { mod = item.actor.data.data.abilities[abl].mod; }
-				else { mod = 0; }
-				output.dc = 8 + prof + mod;
-			}
-		}
-		return output;
-	} else { return null; }
+	if (!isSave(item)) return null
+	return {
+		dc: item.getSaveDC(),
+		saveId: item.data.data.save.type,
+	}
 }
 
 export function isCheck(item) {
@@ -101,7 +76,7 @@ function getQuickDescriptionDefault() {
 }
 
 CONFIG.BetterRollsKryxRPG = {
-	validItemTypes: ["weapon", "spell", "equipment", "feat", "tool", "consumable"],
+	validItemTypes: ["weapon", "superpower", "equipment", "feature", "tool", "consumable"],
 	allFlags: {
 		weaponFlags: {
 			critRange: { type: "String", value: "" },
@@ -118,7 +93,7 @@ CONFIG.BetterRollsKryxRPG = {
 			quickFlavor: { type: "Boolean", value: true, altValue: true },
 			quickPrompt: { type: "Boolean", value: false, altValue: false },
 		},
-		spellFlags: {
+		superpowerFlags: {
 			critRange: { type: "String", value: "" },
 			critDamage: { type: "String", value: "" },
 			quickDesc: { type: "Boolean", value: true, altValue: true },
@@ -146,7 +121,7 @@ CONFIG.BetterRollsKryxRPG = {
 			quickFlavor: { type: "Boolean", value: true, altValue: true },
 			quickPrompt: { type: "Boolean", value: false, altValue: false },
 		},
-		featFlags: {
+		featureFlags: {
 			critRange: { type: "String", value: "" },
 			critDamage: { type: "String", value: "" },
 			quickDesc: { type: "Boolean", value: true, altValue: true },
@@ -249,8 +224,8 @@ async function addButtonsToItemLi(li, actor, buttonContainer) {
 	let contextEnabled = (game.settings.get("betterrolls_kryx_rpg", "damageContextPlacement") !== "0") ? true : false;
     switch (item.data.type) {
         case 'weapon':
-        case 'feat':
-        case 'spell':
+        case 'feature':
+        case 'superpower':
         case 'consumable':
             buttonsWereAdded = true;
             if (diceEnabled) buttons.append(`<span class="tag"><button data-action="quickRoll">${i18n("brkr.buttons.roll")}</button></span>`);
@@ -369,8 +344,8 @@ async function addButtonsToItemLi(li, actor, buttonContainer) {
                 case 'weaponDamage2': item.rollWeaponDamage(ev, true); break;
                 case 'spellAttack': item.rollSpellAttack(ev); break;
                 case 'spellDamage': item.rollSpellDamage(ev); break;
-                case 'featAttack': item.rollFeatAttack(ev); break;
-                case 'featDamage': item.rollFeatDamage(ev); break;
+                case 'featureAttack': item.rollFeatAttack(ev); break;
+                case 'featureDamage': item.rollFeatDamage(ev); break;
                 case 'consume': item.rollConsumable(ev); break;
                 case 'toolCheck': item.rollToolCheck(ev); break;
                 case 'infoRoll': BetterRollsDice.fullRoll(item, { info: true, properties: true }); break;
@@ -620,14 +595,14 @@ export function BetterRolls() {
 		else { return false; }
 	};
 
-	// Prefer synthetic actors over game.actors to avoid consumables and spells being missdepleted.
+	// Prefer synthetic actors over game.actors to avoid consumables and mana being missdepleted.
 	function getActorById(actorId) {
 		let actor = canvas.tokens.placeables.find(t => t.actor?._id === actorId)?.actor;
 		if (!actor) actor = game.actors.entities.find(a => a._id === actorId);
 		return actor;
 	}
 
-	// Prefer token actors over game.actors to avoid consumables and spells being missdepleted.
+	// Prefer token actors over game.actors to avoid consumables and mana being missdepleted.
 	function getActorByName(actorName) {
 		let actor = canvas.tokens.placeables.find(p => p.data.name === actorName)?.actor;
 		if (!actor) actor = game.actors.entities.find(e => e.name === actorName);
