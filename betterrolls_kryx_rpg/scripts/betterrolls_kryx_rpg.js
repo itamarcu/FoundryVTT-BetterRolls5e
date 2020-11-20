@@ -128,7 +128,7 @@ CONFIG.BetterRollsKryxRPG = {
       },
       quickTemplate: { type: 'Boolean', value: true, altValue: true },
       quickOther: { type: 'Boolean', value: true, altValue: true, context: '' },
-      quickFlavor: { type: 'Boolean', value: true, altValue: true },
+      quickFlavor: { type: 'Boolean', value: false, altValue: false },
       quickPrompt: { type: 'Boolean', value: false, altValue: false },
     },
     equipmentFlags: {
@@ -459,21 +459,17 @@ async function addButtonsToItemLi (li, actor, buttonContainer) {
 }
 
 export async function redUpdateFlags (item) {
-  if (!item.data ||
-    CONFIG.BetterRollsKryxRPG.validItemTypes.indexOf(item.data.type) ==
-    -1) { return }
+  if (!item.data || CONFIG.BetterRollsKryxRPG.validItemTypes.indexOf(item.data.type) === -1) { return }
   if (item.data.flags.BetterRollsKryxRPG === undefined) {
     item.data.flags.BetterRollsKryxRPG = {}
   }
 
-  let flags = duplicate(
-    CONFIG.BetterRollsKryxRPG.allFlags[item.data.type.concat('Flags')])
+  let flags = duplicate(CONFIG.BetterRollsKryxRPG.allFlags[item.data.type.concat('Flags')])
   item.data.flags.BetterRollsKryxRPG = mergeObject(flags,
     item.data.flags.BetterRollsKryxRPG)
 
   // If quickDamage flags should exist, update them based on which damage formulae are available
-  if (CONFIG.BetterRollsKryxRPG.allFlags[item.data.type.concat(
-    'Flags')].quickDamage) {
+  if (CONFIG.BetterRollsKryxRPG.allFlags[item.data.type.concat('Flags')].quickDamage) {
     let newQuickDamageValues = []
     let newQuickDamageAltValues = []
 

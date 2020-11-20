@@ -458,7 +458,7 @@ let defaultParams = {
   forceCrit: false,
   preset: false,
   properties: true,
-  slotLevel: null,
+  spentCost: null,
   useCharge: {},
   useTemplate: false,
   event: null,
@@ -554,9 +554,7 @@ export class CustomItemRoll {
     let params = this.params,
       item = this.item,
       itemData = item.data.data,
-      actor = item.actor,
-      flags = item.data.flags,
-      save
+      actor = item.actor
 
     await redUpdateFlags(item)
 
@@ -566,17 +564,20 @@ export class CustomItemRoll {
       this.updateForPreset()
     }
 
-    if (this.params.useCharge.resource) {
+    if (params.useCharge.resource) {
       const consume = itemData.consume
       if (consume?.type === 'ammo') {
         this.ammo = this.actor.items.get(consume.target)
       }
     }
 
-    if (!params.slotLevel) {
-      if (item.data.type === 'spell') {
-        params.slotLevel = await this.configureSpell()
-        if (params.slotLevel === 'error') { return 'error' }
+    if (!params.spentCost) {
+      if (item.data.type === 'superpower') {
+        // will update:
+        // params.spentCost
+        // params.targetType
+        const returnValue = await this.configureSuperpower()
+        if (returnValue === null) return 'error'
       }
     }
 
@@ -590,14 +591,16 @@ export class CustomItemRoll {
     // Show properties
     this.properties = (params.properties) ? this.listProperties() : null
 
-    let printedSlotLevel = (item.data.type === 'spell' &&
-      this.params.slotLevel != item.data.data.level)
-      ? kryx_rpg.spellLevels[this.params.slotLevel]
-      : null
+    let specialPaidCost = null
+    if (item.data.type === 'superpower' && params.spentCost !== itemData.cost) {
+      const resource = item.mainResource
+      const resourceName = item.data.cost === 1 ? resource.nameSingular : resource.name
+      specialPaidCost = `${params.spentCost} ${resourceName}`
+    }
 
     let title = (this.params.title || await renderTemplate(
       'modules/betterrolls_kryx_rpg/templates/red-header.html',
-      { item: item, slotLevel: printedSlotLevel }))
+      { item, specialPaidCost }))
 
     // Add token's ID to chat roll, if valid
     let tokenId
@@ -607,8 +610,7 @@ export class CustomItemRoll {
         actor.token.id].join('.')
     }
 
-    if (params.useTemplate &&
-      (item.data.type == 'feature' || item.data.data.level == 0)) {
+    if (params.useTemplate && item.data.type === 'feature') {
       this.placeTemplate()
     }
 
@@ -905,8 +907,6 @@ export class CustomItemRoll {
       useTemplate,
     })
 
-    console.log(this.params)
-
     this.fields = fields.concat((this.fields || []).slice())
   }
 
@@ -1033,12 +1033,6 @@ export class CustomItemRoll {
   }
 
   addToRollData (data) {
-    data.classes = this.item.actor.items.reduce((obj, i) => {
-      if (i.type === 'class') {
-        obj[i.name.slugify({ strict: true })] = i.data.data
-      }
-      return obj
-    }, {})
     data.prof = this.item.actor.data.data.attributes.prof
   }
 
@@ -1113,10 +1107,10 @@ export class CustomItemRoll {
       triggersCrit: true,
       critThreshold: null,
     }, preArgs || {})
-    let itm = this.item
+    let item = this.item
     // Prepare roll data
-    let itemData = itm.data.data,
-      actorData = itm.actor.data.data,
+    let itemData = item.data.data,
+      actorData = item.actor.data.data,
       title = (this.config.rollTitlePlacement !== '0') ? i18n(
         'brkr.chat.attack') : null,
       parts = [],
@@ -1125,19 +1119,16 @@ export class CustomItemRoll {
     this.addToRollData(rollData)
     this.hasAttack = true
 
-    // Add critical threshold
+    // Add critical threshold (... probably irrelevant in KryxRPG)
     let critThreshold = 20
     let characterCrit = 20
     try {
-      characterCrit = Number(getProperty(itm,
-        'actor.data.flags.kryx_rpg.weaponCriticalThreshold')) || 20
+      characterCrit = Number(getProperty(item, 'actor.data.flags.kryx_rpg.weaponCriticalThreshold')) || 20
     } catch (error) {
-      characterCrit = itm.actor.data.flags.kryx_rpg.weaponCriticalThreshold ||
-        20
+      characterCrit = item.actor.data.flags.kryx_rpg.weaponCriticalThreshold || 20
     }
 
-    let itemCrit = Number(
-      getProperty(itm, 'data.flags.BetterRollsKryxRPG.critRange.value')) || 20
+    let itemCrit = Number(getProperty(item, 'data.flags.BetterRollsKryxRPG.critRange.value')) || 20
     //	console.log(critThreshold, characterCrit, itemCrit);
 
     // If a specific critThreshold is set, use that
@@ -1153,25 +1144,7 @@ export class CustomItemRoll {
     }
 
     // Add ability value bonus
-    let abl = ''
-    if (itm.data.type == 'spell') {
-      abl = itemData.ability || actorData.attributes.spellcasting
-    } else if (itm.data.type == 'weapon') {
-      if (itemData.properties.fin &&
-        (itemData.ability === 'str' || itemData.ability === 'dex' ||
-          itemData.ability === '')) {
-        if (actorData.abilities.str.value >=
-          actorData.abilities.dex.value) { abl = 'str' } else { abl = 'dex' }
-      } else {
-        abl = itemData.ability ||
-          (itemData.actionType === 'mwak' ? 'str' : itemData.actionType ===
-          'rwak'
-            ? 'dex'
-            : '')
-      }
-    } else {
-      abl = itemData.ability || ''
-    }
+    const abl = this.item.abilityMod
 
     if (abl.length) {
       parts.push(`@abl`)
@@ -1179,9 +1152,8 @@ export class CustomItemRoll {
       //console.log("Adding Ability value", abl);
     }
 
-    // Add proficiency, expertise, or Jack of all Trades
-    if (itm.data.type == 'spell' || itm.data.type == 'feat' ||
-      itemData.proficient) {
+    // Add proficiency modifier
+    if (item.data.type === 'superpower' || item.data.type === 'feature' || itemData.proficient) {
       parts.push(`@prof`)
       rollData.prof = Math.floor(actorData.attributes.prof)
       //console.log("Adding Proficiency value!");
@@ -1208,7 +1180,7 @@ export class CustomItemRoll {
       parts.push(args.bonus)
     }
 
-    if (actorData.bonuses && isAttack(itm)) {
+    if (actorData.bonuses && isAttack(item)) {
       let actionType = `${itemData.actionType}`
       if (actorData?.bonuses[actionType]?.attack) {
         parts.push('@' + actionType)
@@ -1235,7 +1207,7 @@ export class CustomItemRoll {
     let d20String = '1d20'
 
     // Halfling Luck check
-    if (Utils.isHalfling(itm.actor)) {
+    if (Utils.isHalfling(item.actor)) {
       d20String = '1d20r<2'
     }
 
@@ -1300,18 +1272,18 @@ export class CustomItemRoll {
   }
 
   async rollDamage ({ damageIndex = 0, forceVersatile = false, forceCrit = false, bonus = 0, customContext = null }) {
-    let itm = this.item
-    let itemData = itm.data.data,
-      rollData = duplicate(itm.actor.data.data),
+    let item = this.item
+    let itemData = item.data.data,
+      rollData = duplicate(item.actor.data.data),
       abl = itemData.ability,
-      flags = itm.data.flags.BetterRollsKryxRPG,
+      flags = item.data.flags.BetterRollsKryxRPG,
       damageFormula,
       damageType = itemData.damage.parts[damageIndex][1],
       isVersatile = false,
-      slotLevel = this.params.slotLevel
+      spentCost = this.params.spentCost
 
     rollData.item = duplicate(itemData)
-    rollData.item.level = slotLevel
+    rollData.item.spentCost = spentCost
     this.addToRollData(rollData)
 
     // Makes the custom roll flagged as having a damage roll.
@@ -1328,7 +1300,7 @@ export class CustomItemRoll {
 
     if (!damageFormula) { return null }
 
-    let type = itm.data.type,
+    let type = item.data.type,
       parts = [],
       dtype = CONFIG.BetterRollsKryxRPG.combinedDamageTypes[damageType]
 
@@ -1409,8 +1381,7 @@ export class CustomItemRoll {
     }
     damageString = damageString.join(' ')
     if (damagePlacement !== '0' && damageString.length > 0 &&
-      !(replaceDamage && contextString && damagePlacement ==
-        contextPlacement)) {
+      !(replaceDamage && contextString && damagePlacement == contextPlacement)) {
       labels[damagePlacement].push(damageString)
     }
 
@@ -1424,7 +1395,7 @@ export class CustomItemRoll {
     }
 
     let bonusAdd = ''
-    if (damageIndex == 0 && rollData.bonuses && isAttack(itm)) {
+    if (damageIndex === 0 && rollData.bonuses && isAttack(item)) {
       let actionType = `${itemData.actionType}`
       if (rollData.bonuses[actionType].damage) {
         bonusAdd = '+' + rollData.bonuses[actionType].damage
@@ -1467,7 +1438,7 @@ export class CustomItemRoll {
   */
 
   async critRoll (rollFormula, rollData, baseRoll) {
-    let itm = this.item
+    let item = this.item
     let critBehavior = this.params.critBehavior
       ? this.params.critBehavior
       : this.config.critBehavior
@@ -1482,14 +1453,14 @@ export class CustomItemRoll {
     if (critRoll.terms.length === 1 && typeof critRoll.terms[0] ===
       'number') { return null }
 
-    if (itm.data.type === 'weapon') {
+    if (item.data.type === 'weapon') {
       try {
-        savage = itm.actor.getFlag('kryx_rpg', 'savageAttacks')
+        savage = item.actor.getFlag('kryx_rpg', 'savageAttacks')
       } catch (error) {
-        savage = itm.actor.getFlag('kryx_rpgJP', 'savageAttacks')
+        savage = item.actor.getFlag('kryx_rpgJP', 'savageAttacks')
       }
     }
-    let add = (itm.actor && savage) ? 1 : 0
+    let add = (item.actor && savage) ? 1 : 0
     critRoll.alter(1, add)
     critRoll.roll()
 
@@ -1513,55 +1484,31 @@ export class CustomItemRoll {
 
   scaleDamage (damageIndex, versatile, rollData) {
     let item = this.item
-    let itemData = item.data.data
-    let actorData = item.actor.data.data
-    let spellLevel = this.params.slotLevel
+    if (item.data.type !== 'superpower') return null
 
-    // Scaling for cantrip damage by level. Affects only the first damage roll of the spell.
-    if (item.data.type === 'spell' && itemData.scaling.mode === 'cantrip') {
-      let parts = itemData.damage.parts.map(d => d[0])
-      let level = item.actor.data.type === 'character'
-        ? Utils.getCharacterLevel(item.actor)
-        : actorData.details.cr
-      let scale = itemData.scaling.formula
-      let formula = parts[damageIndex]
-      const add = Math.floor((level + 1) / 6)
-      if (add === 0) {} else {
-        formula = item._scaleDamage([formula], scale || formula, add, rollData)
-        if (versatile) {
-          formula = item._scaleDamage([itemData.damage.versatile],
-            itemData.damage.versatile, add, rollData)
-        }
+    // copied code from kryxrpg item/entity.js
+    const itemData = item.data.data
+    const actorData = item.actor.data.data
+    const augmentedCost = this.params.spentCost
+    const parts = itemData.damage.parts.map(d => d[0])
+    const scalingMode = itemData.scaling.mode
+    if (scalingMode === 'none') {
+      // do nothing
+    } else if (scalingMode === 'cantrip') {
+      item._scaleCantripDamage(parts, actorData.class.level, itemData.scaling.formula, rollData)
+    } else if (scalingMode === 'augment' || scalingMode === 'enhance') {
+      if (augmentedCost !== null && augmentedCost !== itemData.cost) {
+        item._scaleSpellDamage(parts, itemData.cost, augmentedCost, itemData.scaling.formula, rollData)
       }
-      return formula
+    } else {
+      ui.notifications.error(`Unexpected scaling mode: ${scalingMode}`)
     }
-
-    // Scaling for spell damage by spell slot used. Affects only the first damage roll of the spell.
-    if (item.data.type === 'spell' && itemData.scaling.mode === 'level' &&
-      spellLevel) {
-      let parts = itemData.damage.parts.map(d => d[0])
-      let level = itemData.level
-      let scale = itemData.scaling.formula
-      let formula = parts[damageIndex]
-      const add = Math.floor(spellLevel - level)
-      if (add > 0) {
-        formula = item._scaleDamage([formula], scale || formula, add, rollData)
-        if (versatile) {
-          formula = item._scaleDamage([itemData.damage.versatile],
-            itemData.damage.versatile, add, rollData)
-        }
-      }
-
-      return formula
-    }
-
-    return null
+    return parts.join(' + ')
   }
 
   async rollCritExtra (index) {
     let damageIndex = (index ? toString(index) : null) ||
       this.item.data.flags.BetterRollsKryxRPG?.critDamage?.value || ''
-    let asdf
     if (damageIndex) {
       return await this.rollDamage(
         { damageIndex: Number(damageIndex), forceCrit: 'never' })
@@ -1672,10 +1619,10 @@ export class CustomItemRoll {
       critThreshold: null,
       rollState: this.rollState,
     }, preArgs || {})
-    let itm = this.item
+    let item = this.item
     // Prepare roll data
-    let itemData = itm.data.data,
-      actorData = itm.actor.data.data,
+    let itemData = item.data.data,
+      actorData = item.actor.data.data,
       title = args.title || ((this.config.rollTitlePlacement != '0')
         ? i18n('brkr.chat.check')
         : null),
@@ -1715,7 +1662,7 @@ export class CustomItemRoll {
 
     // Halfling Luck check
     let d20String = '1d20'
-    if (Utils.isHalfling(itm, actor)) {
+    if (Utils.isHalfling(item, actor)) {
       d20String = '1d20r<2'
     }
 
@@ -1745,67 +1692,71 @@ export class CustomItemRoll {
     }
   }
 
-  async configureSpell () {
+  async configureSuperpower () {
     let item = this.item
     let actor = item.actor
-    let lvl = null
-    let consume = false
+
+    let spentCost = item.data.data.cost
+    let shouldConsumeResources = true
     let placeTemplate = false
-    let isPact = false
+    let selectedTargetType = item.data.data.target.type
 
-    // Only run the dialog if the spell is not a cantrip
-    if (item.data.data.level > 0) {
-      try {
-        console.log('level > 0')
-        window.PH = {}
-        window.PH.actor = actor
-        window.PH.item = item
-        const spellFormData = await game.kryx_rpg.applications.AbilityUseDialog.create(
-          item)
-        lvl = spellFormData.get('level')
-        consume = Boolean(spellFormData.get('consumeSlot'))
-        placeTemplate = Boolean(spellFormData.get('placeTemplate'))
-        // console.log(lvl, consume, placeTemplate);
-      } catch (error) { return 'error' }
+    const canChooseTargetType = item.data.data.target.type === 'coneOrLine'
+    const resource = actor.data.data.mainResources[item.isManeuver ? 'stamina' : 'mana']
+    const hasReasonToConfigureDialog = item.hasPlaceableTemplate
+      || (spentCost > 0 && spentCost < resource.limit) // can augment
+      || canChooseTargetType
+    if (hasReasonToConfigureDialog) {
+      // console.log('level > 0')
+      window.PH = {}
+      window.PH.actor = actor
+      window.PH.item = item
+      const superpowerFormData = await game.kryx_rpg.applications.SuperpowerUseDialog.create(actor, item)
+      if (superpowerFormData === null) return null
+      spentCost = parseInt(superpowerFormData.get('spentCost'))
+      shouldConsumeResources = Boolean(superpowerFormData.get('shouldConsumeResources'))
+      placeTemplate = Boolean(superpowerFormData.get('shouldPlaceTemplate'))
+      if (canChooseTargetType) {
+        const useLineTargetType = Boolean(superpowerFormData.get('useLineTargetType'))
+        if (useLineTargetType) {
+          selectedTargetType = 'line'
+        } else {
+          selectedTargetType = 'cone'
+        }
+      }
     }
-
-    if (lvl == 'pact') {
-      isPact = true
-      lvl = getProperty(actor, `data.data.spells.pact.level`) || lvl
-    }
-
-    if (lvl !== item.data.data.level) {
-      item = item.constructor.createOwned(
-        mergeObject(duplicate(item.data), { 'data.level': lvl },
-          { inplace: false }), actor)
-    }
+    const targetType = selectedTargetType
+    this.params.spentCost = spentCost
+    this.params.targetType = targetType
 
     // Update Actor data
-    if (consume && (lvl !== 0)) {
-      let spellSlot = isPact ? 'pact' : 'spell' + lvl
-      const slots = parseInt(actor.data.data.spells[spellSlot].value)
-      if (slots === 0 || Number.isNaN(slots)) {
-        ui.notifications.error(game.i18n.localize('KRYX_RPG.SpellCastNoSlots'))
-        return 'error'
-      }
+    if (shouldConsumeResources && spentCost) {
+      const resourceName = item.isManeuver ? 'stamina' : 'mana'
+      // WARNING!
+      // when the actor updates, it updates the data of all of its items, and this updates this item's data
+      // which will wipe out the BetterRolls flags, if they didn't exist
+      // therefore, I'm adding a hotfix here, because I'm too dumb to solve it correctly
+      const bf = this.item.data.flags.BetterRollsKryxRPG
       await actor.update({
-        [`data.spells.${spellSlot}.value`]: Math.max(
-          parseInt(actor.data.data.spells[spellSlot].value) - 1, 0),
+        [`data.mainResources.${resourceName}.remaining`]: Math.max(resource.remaining - spentCost, 0),
       })
+      this.item.data.flags.BetterRollsKryxRPG = bf
     }
 
     if (placeTemplate) {
       this.placeTemplate()
     }
-
-    return lvl
+    return this.params
   }
 
   // Places a template if the item has an area of effect
   placeTemplate () {
     let item = this.item
-    if (item.hasAreaTarget) {
-      const template = game.kryx_rpg.canvas.AbilityTemplate.fromItem(item)
+    const params = this.params
+    const scaling = params.spentCost || item.data.data.cost || 1
+    const targetType = params.targetType || item.data.data.target.type
+    if (item.hasPlaceableTemplate) {
+      const template = game.kryx_rpg.canvas.AbilityTemplate.fromItem(item, scaling, targetType)
       if (template) template.drawPreview(event)
       if (item.actor && item.actor.sheet) {
         if (item.sheet.rendered) item.sheet.minimize()
