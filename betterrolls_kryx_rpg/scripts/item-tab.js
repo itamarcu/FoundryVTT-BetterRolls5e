@@ -1,104 +1,127 @@
-import { redUpdateFlags, i18n, isAttack, isSave } from "./betterrolls_kryx_rpg.js";
+import {
+	i18n,
+	isAttack,
+	isSave,
+	redUpdateFlags,
+} from './betterrolls_kryx_rpg.js'
 
-let activate = false;
+let activate = false
 
 /**
  * Adds adds the Better Rolls tab to an item's sheet. Should only be called when the sheet is rendered.
  */
-export async function addBetterRollsContent(app, protoHtml) {
-	const item = app.object;
-	const itemData = item.data.data;
+export async function addBetterRollsContent (app, protoHtml) {
+  const item = app.object
+  const itemData = item.data.data
 
-	if (item.actor && item.actor.permission < 3) { return; }
-	if (CONFIG.BetterRollsKryxRPG.validItemTypes.indexOf(item.data.type) == -1) { return; }
+  if (item.actor && item.actor.permission < 3) { return }
+  if (CONFIG.BetterRollsKryxRPG.validItemTypes.indexOf(item.data.type) ==
+    -1) { return }
 
-	redUpdateFlags(item);
+  redUpdateFlags(item)
 
-	let html = protoHtml;
+  let html = protoHtml
 
-	if (html[0].localName !== "div") {
-		html = $(html[0].parentElement.parentElement);
-	}
+  if (html[0].localName !== 'div') {
+    html = $(html[0].parentElement.parentElement)
+  }
 
-	// Create tab (for selection)
-	const tabSelector = html.find("form nav.sheet-navigation.tabs");
-	const betterRollsTabString = `<a class="item" data-group="primary" data-tab="BetterRollsKryxRPG">${i18n("Better Rolls")}</a>`;
-	tabSelector.append($(betterRollsTabString));
+  // Create tab (for selection)
+  const tabSelector = html.find('form nav.sheet-navigation.tabs')
+  const betterRollsTabString = `<a class="item" data-group="primary" data-tab="BetterRollsKryxRPG">${i18n(
+    'Better Rolls')}</a>`
+  tabSelector.append($(betterRollsTabString))
 
-	const settingsContainer = html.find(".sheet-body");
-	const betterRollsTemplateString = "modules/betterrolls_kryx_rpg/templates/red-item-options.html";
-	const altSecondaryEnabled = game.settings.get("betterrolls_kryx_rpg", "altSecondaryEnabled");
+  const settingsContainer = html.find('.sheet-body')
+  const betterRollsTemplateString = 'modules/betterrolls_kryx_rpg/templates/red-item-options.html'
+  const altSecondaryEnabled = game.settings.get('betterrolls_kryx_rpg',
+    'altSecondaryEnabled')
 
-	// For items with quantity (weapons, tools, consumables...)
-	const hasQuantity = ("quantity" in itemData);
-	// For items with "Limited Uses" configured
-	const hasUses = !!(itemData.uses.value || itemData.uses.max || itemData.uses.per);
-	// For items with "Resource Consumption" configured
-	const hasResource = !!(itemData.consume?.target);
-	// For abilities with "Action Recharge" configured
-	const hasCharge = !!(itemData.recharge?.value);
-	
-	// For items that have at least one way to consume something
-	const canConsume = hasQuantity || hasUses || hasResource || hasCharge;
+  // For items with quantity (weapons, tools, consumables...)
+  const hasQuantity = ('quantity' in itemData)
+  // For items with "Limited Uses" configured
+  const hasUses = !!(itemData.uses.value || itemData.uses.max ||
+    itemData.uses.per)
+  // For items with "Resource Consumption" configured
+  const hasResource = !!(itemData.consume?.target)
+  // For abilities with "Action Recharge" configured
+  const hasCharge = !!(itemData.recharge?.value)
 
-	const betterRollsTemplate = await renderTemplate(betterRollsTemplateString, {
-		KRYX_RPG: CONFIG.KRYX_RPG,
-		item,
-		canConsume,
-		hasQuantity,
-		hasUses,
-		hasResource,
-		hasCharge,
-		isAttack: isAttack(item),
-		isSave: isSave(item),
-		flags: item.data.flags,
-		damageTypes: CONFIG.BetterRollsKryxRPG.combinedDamageTypes,
-		altSecondaryEnabled,
-		itemHasTemplate: item.hasAreaTarget
-	});
-	
-	settingsContainer.append(betterRollsTemplate);
+  // For items that have at least one way to consume something
+  const canConsume = hasQuantity || hasUses || hasResource || hasCharge
 
-	// Tab back to better rolls if we need (after certain events it may happen)
-	if (activate) {
-		app._tabs[0].activate("BetterRollsKryxRPG");
-		app.setPosition();
-		activate = false;
-	}
+  const betterRollsTemplate = await renderTemplate(betterRollsTemplateString, {
+    KRYX_RPG: CONFIG.KRYX_RPG,
+    item,
+    canConsume,
+    hasQuantity,
+    hasUses,
+    hasResource,
+    hasCharge,
+    isAttack: isAttack(item),
+    isSave: isSave(item),
+    flags: item.data.flags,
+    damageTypes: CONFIG.BetterRollsKryxRPG.combinedDamageTypes,
+    altSecondaryEnabled,
+    itemHasTemplate: item.hasAreaTarget,
+  })
 
-	// Add damage context input
-	if (game.settings.get("betterrolls_kryx_rpg", "damageContextPlacement") !== "0") {
-		const damageRolls = html.find(".tab.details .damage-parts .damage-part input").toArray();
-		// Placeholder is either "Context" or "Label" depending on system settings
-		const placeholder = game.settings.get("betterrolls_kryx_rpg", "contextReplacesDamage") ? "brkr.settings.label" : "brkr.settings.context";
+  settingsContainer.append(betterRollsTemplate)
 
-		damageRolls.forEach((damageRoll, i) => {
-			const contextField = $(`<input type="text" name="flags.BetterRollsKryxRPG.quickDamage.context.${i}" value="${(item.data.flags.BetterRollsKryxRPG.quickDamage.context[i] || "")}" placeholder="${i18n(placeholder)}" data-dtype="String" style="margin-left:5px;">`);
+  // Tab back to better rolls if we need (after certain events it may happen)
+  if (activate) {
+    app._tabs[0].activate('BetterRollsKryxRPG')
+    app.setPosition()
+    activate = false
+  }
 
-			damageRoll.after(contextField[0]);
+  // Add damage context input
+  if (game.settings.get('betterrolls_kryx_rpg', 'damageContextPlacement') !==
+    '0') {
+    const damageRolls = html.find(
+      '.tab.details .damage-parts .damage-part input').toArray()
+    // Placeholder is either "Context" or "Label" depending on system settings
+    const placeholder = game.settings.get('betterrolls_kryx_rpg',
+      'contextReplacesDamage')
+      ? 'brkr.settings.label'
+      : 'brkr.settings.context'
 
-			// Add event listener to delete context when damage is deleted
-			$($($(damageRoll)[0].parentElement).find(`a.delete-damage`)).click(async _ => {
-				const contextFlags = Object.values(item.data.flags.BetterRollsKryxRPG.quickDamage.context);
-				contextFlags.splice(i, 1);
-				item.update({
-					[`flags.BetterRollsKryxRPG.quickDamage.context`]: contextFlags,
-				});
-			});
-		});
+    damageRolls.forEach((damageRoll, i) => {
+      const contextField = $(
+        `<input type="text" name="flags.BetterRollsKryxRPG.quickDamage.context.${i}" value="${(item.data.flags.BetterRollsKryxRPG.quickDamage.context[i] ||
+          '')}" placeholder="${i18n(
+          placeholder)}" data-dtype="String" style="margin-left:5px;">`)
 
-		// Add context field for Other Formula field
-		if (getProperty(item, "data.flags.BetterRollsKryxRPG.quickOther")) {
-			const otherRoll = html.find(`.tab.details .form-fields input[name="data.formula"]`);
-			const otherContextField = $(`<input type="text" name="flags.BetterRollsKryxRPG.quickOther.context" value="${(item.data.flags.BetterRollsKryxRPG.quickOther.context || "")}" placeholder="${i18n(placeholder)}" data-dtype="String" style="margin-left:5px;">`);
-			if (otherRoll[0]) { otherRoll[0].after(otherContextField[0]); }
-		}
-	}
+      damageRoll.after(contextField[0])
 
-	// Activate the tab if anything changes in any sub-field	
-	const newSection = settingsContainer.find(".tab.item-betterRolls");
-	newSection.find("input[type=text]").change((evt) => activate = true);
-	newSection.find("input[type=number]").change((evt) => activate = true);
-	newSection.find("input[type=checkbox]").change((evt) => activate = true);
-	newSection.find("select").change((evt) => activate = true);
+      // Add event listener to delete context when damage is deleted
+      $($($(damageRoll)[0].parentElement).find(`a.delete-damage`)).
+        click(async _ => {
+          const contextFlags = Object.values(
+            item.data.flags.BetterRollsKryxRPG.quickDamage.context)
+          contextFlags.splice(i, 1)
+          item.update({
+            [`flags.BetterRollsKryxRPG.quickDamage.context`]: contextFlags,
+          })
+        })
+    })
+
+    // Add context field for Other Formula field
+    if (getProperty(item, 'data.flags.BetterRollsKryxRPG.quickOther')) {
+      const otherRoll = html.find(
+        `.tab.details .form-fields input[name="data.formula"]`)
+      const otherContextField = $(
+        `<input type="text" name="flags.BetterRollsKryxRPG.quickOther.context" value="${(item.data.flags.BetterRollsKryxRPG.quickOther.context ||
+          '')}" placeholder="${i18n(
+          placeholder)}" data-dtype="String" style="margin-left:5px;">`)
+      if (otherRoll[0]) { otherRoll[0].after(otherContextField[0]) }
+    }
+  }
+
+  // Activate the tab if anything changes in any sub-field
+  const newSection = settingsContainer.find('.tab.item-betterRolls')
+  newSection.find('input[type=text]').change((evt) => activate = true)
+  newSection.find('input[type=number]').change((evt) => activate = true)
+  newSection.find('input[type=checkbox]').change((evt) => activate = true)
+  newSection.find('select').change((evt) => activate = true)
 } 
