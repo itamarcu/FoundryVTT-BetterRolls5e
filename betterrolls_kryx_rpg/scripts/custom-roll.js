@@ -1304,24 +1304,22 @@ export class CustomItemRoll {
       parts = [],
       dtype = CONFIG.BetterRollsKryxRPG.combinedDamageTypes[damageType]
 
-    let generalMod = rollData.attributes.spellcasting
-
-    // Spells don't push their abilities to damage by default. This is here so the user can add "+ @value" to their damage roll if they wish.
-    if (type === 'spell') {
-      abl = itemData.ability ? itemData.ability : generalMod
+    // Superpowers don't push their abilities to damage by default. This is here so the user can add "+ @value" to their damage roll if they wish.
+    if (type === 'superpower') {
+      abl = itemData.ability ? itemData.ability : item.abilityMod
     }
 
     // Applies ability on weapon and feat damage rolls, but only for the first damage roll listed on the item.
-    if (!abl && (type === 'weapon' || type === 'feat') && damageIndex === 0) {
+    if (!abl && (type === 'weapon' || type === 'feature') && damageIndex === 0) {
       if (type === 'weapon') {
         if (itemData.properties.fin &&
           (itemData.ability === 'str' || itemData.ability === 'dex' ||
             itemData.ability === '')) {
           if (rollData.abilities.str.value >=
             rollData.abilities.dex.value) { abl = 'str' } else { abl = 'dex' }
-        } else if (itemData.actionType == 'mwak') {
+        } else if (itemData.actionType === 'mwak') {
           abl = 'str'
-        } else if (itemData.actionType == 'rwak') {
+        } else if (itemData.actionType === 'rwak') {
           abl = 'dex'
         }
       }
@@ -1498,7 +1496,7 @@ export class CustomItemRoll {
       item._scaleCantripDamage(parts, actorData.class.level, itemData.scaling.formula, rollData)
     } else if (scalingMode === 'augment' || scalingMode === 'enhance') {
       if (augmentedCost !== null && augmentedCost !== itemData.cost) {
-        item._scaleSpellDamage(parts, itemData.cost, augmentedCost, itemData.scaling.formula, rollData)
+        item._scaleSuperpowerDamage(parts, itemData.cost, augmentedCost, itemData.scaling.formula, rollData)
       }
     } else {
       ui.notifications.error(`Unexpected scaling mode: ${scalingMode}`)
