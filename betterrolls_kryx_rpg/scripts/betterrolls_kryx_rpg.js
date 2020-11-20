@@ -201,8 +201,7 @@ CONFIG.BetterRollsKryxRPG = {
 
 Hooks.on(`ready`, () => {
   // Make a combined damage type array that includes healing
-  CONFIG.BetterRollsKryxRPG.combinedDamageTypes = mergeObject(
-    duplicate(kryx_rpg.damageTypes), kryx_rpg.healingTypes)
+  CONFIG.BetterRollsKryxRPG.combinedDamageTypes = kryx_rpg.damageTypes
 
   // Updates crit text from the dropdown.
   let critText = game.settings.get('betterrolls_kryx_rpg', 'critString')
@@ -282,7 +281,7 @@ async function addButtonsToItemLi (li, actor, buttonContainer) {
       if (isSave(item)) {
         let saveData = getSave(item)
         buttons.append(`<span class="tag"><button data-action="save">${i18n(
-          'brkr.buttons.saveDC')} ${saveData.dc} ${kryx_rpg.abilities[saveData.ability]}</button></span>`)
+          'brkr.buttons.saveDC')} ${saveData.dc} ${kryx_rpg.saves[saveData.saveId]}</button></span>`)
       }
       if (itemData.damage.parts.length > 0) {
         buttons.append(
@@ -511,11 +510,11 @@ export function updateSaveButtons (html) {
     if (button.dataset.action === 'save') {
       event.preventDefault()
       let actors = getTargetActors()
-      let ability = button.dataset.ability
+      let saveId = button.dataset.save
       let params = await CustomRoll.eventToAdvantage(event)
       for (let i = 0; i < actors.length; i++) {
         if (actors[i]) {
-          CustomRoll.fullRollAttribute(actors[i], ability, 'save', params)
+          CustomRoll.fullRollAttribute(actors[i], saveId, 'save', params)
         }
       }
       setTimeout(() => {button.disabled = false}, 1)
@@ -575,8 +574,8 @@ export function changeRollsToDual (actor, html, data, params) {
     saveName.off()
     saveName.click(async event => {
       event.preventDefault()
-      let save = getAbility(event.currentTarget),
-        params = await CustomRoll.eventToAdvantage(event)
+      let save = event.currentTarget.parentElement.getAttribute('data-save')
+      params = await CustomRoll.eventToAdvantage(event)
       CustomRoll.fullRollAttribute(actor, save, 'save', params)
     })
   }

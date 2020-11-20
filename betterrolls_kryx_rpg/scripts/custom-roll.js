@@ -1,13 +1,13 @@
 import {
-	createMessage,
-	getSave,
-	getWhisperData,
-	hasMaestroSound,
-	i18n,
-	isAttack,
-	isCheck,
-	isSave,
-	redUpdateFlags,
+  createMessage,
+  getSave,
+  getWhisperData,
+  hasMaestroSound,
+  i18n,
+  isAttack,
+  isCheck,
+  isSave,
+  redUpdateFlags,
 } from './betterrolls_kryx_rpg.js'
 import { Utils } from './utils.js'
 
@@ -125,8 +125,17 @@ export class CustomRoll {
     return dicePool
   }
 
-  // Returns an {adv, disadv} object when given an event
+  /**
+   * for KryxRPG:  when holding Alt, there will be a "triple" field
+   */
   static async eventToAdvantage (ev, itemType) {
+    const obj = await this._eventToAdvantage(ev, itemType)
+    obj.triple = ev.altKey ? 1 : 0
+    return obj
+  }
+
+  // Returns an {adv, disadv} object when given an event
+  static async _eventToAdvantage (ev, itemType) {
     if (ev.shiftKey) {
       return { adv: 1, disadv: 0 }
     } else if ((keyboard.isCtrl(ev))) {
@@ -244,6 +253,9 @@ export class CustomRoll {
     let numRolls = game.settings.get('betterrolls_kryx_rpg', 'd20Mode')
     if (rollState && numRolls == 1) {
       numRolls = 2
+    }
+    if (params.triple) {
+      numRolls = 3
     }
 
     return await CustomRoll.rollMultiple(numRolls, d20String, parts, data,
@@ -382,6 +394,9 @@ export class CustomRoll {
     if (rollState && numRolls == 1) {
       numRolls = 2
     }
+    if (params.triple) {
+      numRolls = 3
+    }
 
     return await CustomRoll.rollMultiple(numRolls, d20String, parts, data,
       flavor, params.critThreshold || null, rollState)
@@ -424,6 +439,9 @@ export class CustomRoll {
     if (rollState && numRolls == 1) {
       numRolls = 2
     }
+    if (params.triple) {
+      numRolls = 3
+    }
 
     return await CustomRoll.rollMultiple(numRolls, d20String, parts, data,
       flavor, params.critThreshold || null, rollState)
@@ -446,6 +464,7 @@ let defaultParams = {
   event: null,
   adv: 0,
   disadv: 0,
+  triple: 0,
 }
 
 // A custom roll with data corresponding to an item on a character's sheet.
@@ -507,6 +526,9 @@ export class CustomItemRoll {
     }
     if (keyboard.isCtrl(eventToCheck)) {
       this.params.disadv = 1
+    }
+    if (eventToCheck.altKey) {
+      this.params.triple = 1
     }
   }
 
@@ -586,7 +608,7 @@ export class CustomItemRoll {
     }
 
     if (params.useTemplate &&
-      (item.data.type == 'feat' || item.data.data.level == 0)) {
+      (item.data.type == 'feature' || item.data.data.level == 0)) {
       this.placeTemplate()
     }
 
@@ -625,6 +647,7 @@ export class CustomItemRoll {
       useTemplate: false,
       adv: 0,
       disadv: 0,
+      triple: 0,
     },
     [
       ["attack", {triggersCrit: true}],
@@ -693,14 +716,14 @@ export class CustomItemRoll {
         }
         break
       case 'savedc':
-        // {customAbl: null, customDC: null}
-        let abl, dc
+        // {customSaveId: null, customDC: null}
+        let saveId, dc
         if (fieldArgs[0]) {
-          abl = fieldArgs[0].abl
+          saveId = fieldArgs[0].saveId
           dc = fieldArgs[0].dc
         }
         this.templates.push(
-          await this.saveRollButton({ customAbl: abl, customDC: dc }))
+          await this.saveRollButton({ customSaveId: saveId, customDC: dc }))
         break
       case 'other':
         if (item.data.data.formula) {
@@ -907,9 +930,8 @@ export class CustomItemRoll {
       ((data.target.units) && (data.target.units !== 'none') ? ' (' +
         data.target.value + ' ' + kryx_rpg.distanceUnits[data.target.units] +
         ')' : '') : null
-    let activation = (data.activation && (data.activation.type !== '') &&
-      (data.activation.type !== 'none')) ? data.activation.cost + ' ' +
-      data.activation.type : null
+    let activation = (data.activation && data.activation.type !== '' &&
+      data.activation.type !== 'none') ? data.activation.type : null
     let duration = (data.duration && data.duration.units) ? (data.duration.value
       ? data.duration.value + ' '
       : '') + kryx_rpg.timePeriods[data.duration.units] : null
@@ -931,43 +953,30 @@ export class CustomItemRoll {
           }
         }
         break
-      case 'spell':
+      case 'superpower':
         // Spell attack labels
-        data.damageLabel = data.actionType === 'heal' ? i18n(
-          'brkr.chat.healing') : i18n('brkr.chat.damage')
-        data.isAttack = data.actionType === 'attack'
+        data.damageLabel = item.isHealing
+          ? i18n('brkr.chat.healing')
+          : i18n('brkr.chat.damage')
+        data.isAttack = item.hasAttack
 
-        let components = data.components,
-          componentString = ''
-        if (components.vocal) { componentString += i18n('brkr.chat.abrVocal') }
-        if (components.somatic) {
-          componentString += i18n('brkr.chat.abrSomatic')
-        }
-        if (components.material) {
-          componentString += i18n('brkr.chat.abrMaterial')
-          if (data.materials.value) {
-            componentString += ' (' + data.materials.value +
-              (data.materials.consumed
-                ? i18n('brkr.chat.consumedBySpell')
-                : '') + ')'
-          }
-        }
+        let components = data.components
 
         properties = [
-          kryx_rpg.spellSchools[data.school],
-          kryx_rpg.spellLevels[data.level],
+          item.labels.cost,
+          item.labels.themes,
           components.ritual ? i18n('Ritual') : null,
           activation,
           duration,
-          data.components.concentration ? i18n('Concentration') : null,
-          componentString ? componentString : null,
+          components.concentration ? i18n('Concentration') : null,
+          components.material ? components.material : null,
           range,
           target,
         ]
         break
-      case 'feat':
+      case 'feature':
         properties = [
-          data.requirements,
+          kryx_rpg.featureTypes[data.featureType],
           ((data.activation.type !== '') && (data.activation.type !== 'none'))
             ? (data.activation.cost ? data.activation.cost + ' ' : '') +
             kryx_rpg.abilityActivationTypes[data.activation.type]
@@ -1099,6 +1108,7 @@ export class CustomItemRoll {
     let args = mergeObject({
       adv: this.params.adv,
       disadv: this.params.disadv,
+      triple: this.params.triple,
       bonus: null,
       triggersCrit: true,
       critThreshold: null,
@@ -1207,27 +1217,19 @@ export class CustomItemRoll {
     }
 
     // Establish number of rolls using advantage/disadvantage
-    let adv = this.params.adv
-    if (args.adv) { adv = args.adv }
+    let adv = this.params.adv || args.adv
+    let disadv = this.params.disadv || args.disadv
+    let triple = this.params.triple || args.triple
 
-    let disadv = this.params.disadv
-    if (args.disadv) { disadv = args.disadv }
-
-    let rollState = CustomRoll.getRollState(
-      { adv: args.adv, disadv: args.disadv })
+    let rollState = CustomRoll.getRollState({ adv, disadv, triple })
 
     let numRolls = this.config.d20Mode
 
     if (rollState) {
       numRolls = 2
     }
-
-    // Elven Accuracy check
-    if (numRolls == 2) {
-      if (getProperty(itm, 'actor.data.flags.kryx_rpg.elvenAccuracy') &&
-        ['dex', 'int', 'wis', 'cha'].includes(abl) && rollState !== 'lowest') {
-        numRolls = 3
-      }
+    if (triple) {
+      numRolls = 3
     }
 
     let d20String = '1d20'
@@ -1374,7 +1376,8 @@ export class CustomItemRoll {
         (flags.quickDamage.context && flags.quickDamage.context[damageIndex])
 
     // Show "Healing" prefix only if it's not inherently a heal action
-    if (kryx_rpg.healingTypes[damageType]) { titleString = '' }
+    if (['healing', 'temphp', 'totalhp'].includes(
+      damageType)) { titleString = '' }
     // Show "Damage" prefix if it's a damage roll
     else if (kryx_rpg.damageTypes[damageType]) {
       titleString += i18n('brkr.chat.damage')
@@ -1414,7 +1417,6 @@ export class CustomItemRoll {
     for (let p in labels) {
       labels[p] = labels[p].join(' - ')
     }
-
 
     if (damageIndex === 0) {
       damageFormula = this.scaleDamage(damageIndex, isVersatile, rollData) ||
@@ -1634,13 +1636,11 @@ export class CustomItemRoll {
 
   /* 	Generates the html for a save button to be inserted into a chat message. Players can click this button to perform a roll through their controlled token.
   */
-  async saveRollButton ({ customAbl = null, customDC = null }) {
+  async saveRollButton ({ customSaveId = null, customDC = null }) {
     let item = this.item
-    let itemData = item.data.data
     let actor = item.actor
-    let actorData = actor.data.data
     let saveData = getSave(item)
-    if (customAbl) { saveData.ability = saveArgs.customAbl }
+    if (customSaveId) { saveData.saveId = saveArgs.customSaveId }
     if (customDC) { saveData.dc = saveArgs.customDC }
 
     let hideDC = (this.config.hideDC == '2' ||
@@ -1648,10 +1648,10 @@ export class CustomItemRoll {
 
     let divHTML = `<span ${hideDC
       ? 'class="hideSave"'
-      : null} style="display:inline;line-height:inherit;">${saveData.dc}</span>`
+      : ''} style="display:inline;line-height:inherit;">${saveData.dc}</span>`
 
     let saveLabel = `${i18n('brkr.buttons.saveDC')} ` + divHTML +
-      ` ${kryx_rpg.abilities[saveData.ability]}`
+      ` ${kryx_rpg.saves[saveData.saveId]}`
     let button = {
       type: 'saveDC',
       html: await renderTemplate(
@@ -1666,6 +1666,7 @@ export class CustomItemRoll {
     let args = mergeObject({
       adv: 0,
       disadv: 0,
+      triple: 0,
       bonus: null,
       triggersCrit: true,
       critThreshold: null,
