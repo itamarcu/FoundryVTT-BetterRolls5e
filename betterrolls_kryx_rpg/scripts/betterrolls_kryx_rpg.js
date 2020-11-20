@@ -461,81 +461,33 @@ export function changeRollsToDual (actor, html, data, params) {
 	
 	let paramRequests = mergeObject({
 			abilityButton: '.ability-name',
-			checkButton: '.ability-mod',
-			saveButton: '.ability-save',
+			saveButton: '.save-name',
 			skillButton: '.skill-name',
 			itemButton: '.item .item-image',
 			singleAbilityButton: true
 		},params || {});
-	
-	function getAbility(target) {
-		let ability = null;
-		for (let i=0; i <= 3; i++) {
-			ability = target.getAttribute("data-ability");
-			if (ability) { break; }
-			else {
-				target = target.parentElement;
-			}
-		}
-		return ability;
-	}
-	
+
 	// Assign new action to ability check button
 	let abilityName = html.find(paramRequests.abilityButton);
 	if (abilityName.length > 0 && paramRequests.singleAbilityButton === true) {
 		abilityName.off();
-		abilityName.click(event => {
+		abilityName.click(async event => {
 			event.preventDefault();
-			let ability = getAbility(event.currentTarget),
-				abl = actor.data.data.abilities[ability];
-			if ( keyboard.isCtrl(event) ) {
-				CustomRoll.fullRollAttribute(actor, ability, "check");
-			} else if ( event.shiftKey ) {
-				CustomRoll.fullRollAttribute(actor, ability, "save");
-			} else {
-				new Dialog({
-					title: `${i18n(kryx_rpg.abilities[ability])} ${i18n("Ability Roll")}`,
-					content: `<p><span style="font-weight: bold;">${i18n(kryx_rpg.abilities[ability])}:</span> ${i18n("What type of roll?")}</p>`,
-					buttons: {
-						test: {
-							label: i18n("Ability Check"),
-							callback: async () => { params = await CustomRoll.eventToAdvantage(event); CustomRoll.fullRollAttribute(actor, ability, "check"); }
-						},
-						save: {
-							label: i18n("Saving Throw"),
-							callback: async () => { params = await CustomRoll.eventToAdvantage(event); CustomRoll.fullRollAttribute(actor, ability, "save"); }
-						}
-					}
-				}).render(true);
-			}
-		});
-	}
-	
-	// Assign new action to ability button
-	let checkName = html.find(paramRequests.checkButton);
-	if (checkName.length > 0) {
-		checkName.off();
-		checkName.addClass("rollable");
-		checkName.click(async event => {
-			event.preventDefault();
-			let ability = getAbility(event.currentTarget),
-				abl = actor.data.data.abilities[ability],
-				params = await CustomRoll.eventToAdvantage(event);
+			let ability = event.currentTarget.parentElement.getAttribute("data-ability");
+			params = await CustomRoll.eventToAdvantage(event);
 			CustomRoll.fullRollAttribute(actor, ability, "check", params);
 		});
 	}
 	
-	// Assign new action to save button
+	// Assign new action to save buttons
 	let saveName = html.find(paramRequests.saveButton);
 	if (saveName.length > 0) {
 		saveName.off();
-		saveName.addClass("rollable");
 		saveName.click(async event => {
 			event.preventDefault();
-			let ability = getAbility(event.currentTarget),
-				abl = actor.data.data.abilities[ability],
-				params = await CustomRoll.eventToAdvantage(event);
-			CustomRoll.fullRollAttribute(actor, ability, "save", params);
+			let save = getAbility(event.currentTarget),
+			params = await CustomRoll.eventToAdvantage(event);
+			CustomRoll.fullRollAttribute(actor, save, "save", params);
 		});
 	}
 	

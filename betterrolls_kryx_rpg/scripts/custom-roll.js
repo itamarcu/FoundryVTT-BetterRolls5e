@@ -200,16 +200,16 @@ export class CustomRoll {
 	
 	// Rolls a skill check through a character
 	static async rollSkillCheck(actor, skill, params = {}) {
-		let parts = ["@mod"],
-			data = {mod: skill.total},
+		let parts = ["@value"],
+			data = {value: skill.total},
 			flavor = null;
-		
+
 		const skillBonus = getProperty(actor, "data.data.bonuses.abilities.skill");
 		if (skillBonus) {
 			parts.push("@skillBonus");
 			data["skillBonus"] = skillBonus;
 		}
-		
+
 		// Halfling Luck check
 		let d20String = "1d20";
 		if (Utils.isHalfling(actor)) {
@@ -219,23 +219,23 @@ export class CustomRoll {
 		if (getProperty(actor, "data.flags.kryx_rpg.reliableTalent") && skill.value >= 1) {
 			d20String = `{${d20String},10}kh`;
 		}
-		
+
 		let rollState = params ? CustomRoll.getRollState(params) : null;
-		
+
 		let numRolls = game.settings.get("betterrolls_kryx_rpg", "d20Mode");
 		if (rollState && numRolls == 1) {
 			numRolls = 2;
 		}
-		
+
 		return await CustomRoll.rollMultiple(numRolls, d20String, parts, data, flavor, params.critThreshold || null, rollState, params.triggersCrit, "skill");
 	}
 
 	static async rollCheck(actor, ability, params) {
-		return await CustomRoll.fullRollAttribute(actor, ability, "check", params);
+		return await CustomRoll.fullRollCheck(actor, ability, params);
 	}
 
-	static async rollSave(actor, ability, params) {
-		return await CustomRoll.fullRollAttribute(actor, ability, "save", params);
+	static async rollSave(actor, saveId, params) {
+		return await CustomRoll.fullRollSave(actor, saveId, params);
 	}
 
 	static getImage(actor) {
@@ -251,39 +251,40 @@ export class CustomRoll {
 				break;
 		}
 	}
-	
+
 	/**
 	* Creates a chat message with the requested ability check or saving throw.
 	* @param {ActorKryx} actor		The actor object to reference for the roll.
-	* @param {String} ability		The ability score to roll.
-	* @param {String} rollType		String of either "check" or "save" 
+	* @param {String} abilityOrSaveId		you know, that thing
+	* @param {String} rollType		String of either "check" or "save"
 	*/
-	static async fullRollAttribute(actor, ability, rollType, params) {
+	static async fullRollAttribute(actor, abilityOrSaveId, rollType, params) {
 		let multiRoll,
 			titleString,
-			abl = ability,
-			label = kryx_rpg.abilities[ability];
-		
+			label
+
 		let wd = getWhisperData();
-		
+
 		if (rollType === "check") {
-			multiRoll = await CustomRoll.rollAbilityCheck(actor, abl, params);
+			multiRoll = await CustomRoll.rollAbilityCheck(actor, abilityOrSaveId, params);
+			label = kryx_rpg.abilities[abilityOrSaveId];
 			titleString = `${i18n(label)} ${i18n("brkr.chat.check")}`;
 		} else if (rollType === "save") {
-			multiRoll = await CustomRoll.rollAbilitySave(actor, abl, params);
+			multiRoll = await CustomRoll.rollSavingThrow(actor, abilityOrSaveId, params);
+			label = kryx_rpg.saves[abilityOrSaveId];
 			titleString = `${i18n(label)} ${i18n("brkr.chat.save")}`;
 		}
 
 		// let titleImage = ((actor.data.img == DEFAULT_TOKEN) || actor.data.img == "" || actor.data.img.includes("*")) ? (actor.token && actor.token.data ? actor.token.data.img : actor.data.token.img) : actor.data.img;
 		let titleImage = CustomRoll.getImage(actor);
-		
+
 		let titleTemplate = await renderTemplate("modules/betterrolls_kryx_rpg/templates/red-header.html", {
 			item: {
 				img: titleImage,
 				name: titleString
 			}
 		});
-		
+
 		let content = await renderTemplate("modules/betterrolls_kryx_rpg/templates/red-fullroll.html", {
 			title: titleTemplate,
 			templates: [multiRoll]
@@ -291,7 +292,7 @@ export class CustomRoll {
 
 		let has3DDiceSound = game.dice3d ? game.settings.get("dice-so-nice", "settings").enabled : false;
 		let playRollSounds = game.settings.get("betterrolls_kryx_rpg", "playRollSounds")
-		
+
 		let rollMessage = {
 			chatData: {
 				user: game.user._id,
@@ -309,23 +310,23 @@ export class CustomRoll {
 			},
 			dicePool: CustomRoll.getDicePool(multiRoll)
 		};
-		
+
 		if (wd.whisper) { rollMessage.chatData.whisper = wd.whisper; }
-		
+
 		// Output the rolls to chat
 		return await createMessage(rollMessage);
 	}
-	
+
 	static async rollAbilityCheck(actor, abl, params = {}) {
-		let parts = ["@mod"],
+		let parts = ["@value"],
 			data = duplicate(actor.data.data),
 			flavor = null;
 
-			data.mod = data.abilities[abl].mod;
-		
+			data.value = data.abilities[abl].value;
+
 		const checkBonus = getProperty(actor, "data.data.bonuses.abilityCheck");
 		const secondCheckBonus = getProperty(actor, "data.data.bonuses.abilities.check");
-		
+
 		if (checkBonus && parseInt(checkBonus) !== 0) {
 			parts.push("@checkBonus");
 			data["checkBonus"] = checkBonus;
@@ -343,58 +344,57 @@ export class CustomRoll {
 		if (Utils.isHalfling(actor)) {
 			d20String = "1d20r<2";
 		}
-		
+
 		let rollState = params ? CustomRoll.getRollState(params) : null;
-		
+
 		let numRolls = game.settings.get("betterrolls_kryx_rpg", "d20Mode");
 		if (rollState && numRolls == 1) {
 			numRolls = 2;
 		}
-		
+
 		return await CustomRoll.rollMultiple(numRolls, d20String, parts, data, flavor, params.critThreshold || null, rollState);
 	}
-	
-	static async rollAbilitySave(actor, abl, params = {}) {
-		//console.log(abl);
+
+	static async rollSavingThrow(actor, save, params = {}) {
 		let actorData = actor.data.data;
 		let parts = [];
-		let data = {mod: []};
+		let data = {value: []};
 		let flavor = null;
-		
+
 		// Support modifiers and global save bonus
-		const saveBonus = getProperty(actorData, "bonuses.abilities.save") || null;
-		let ablData = actor.data.data.abilities[abl];
-		let ablParts = {};
-		ablParts.mod = ablData.mod !== 0 ? ablData.mod.toString() : null;
-		ablParts.prof = ((ablData.proficient || 0) * actorData.attributes.prof).toString();
-		let mods = [ablParts.mod, ablParts.prof, saveBonus];
+		const saveBonus = getProperty(actorData, "bonuses.saves.save") || null;
+		let saveData = actor.data.data.saves[save];
+		let saveParts = {};
+		saveParts.value = saveData.value !== 0 ? saveData.value.toString() : null;
+		saveParts.prof = ((saveData.prof || 0) * actorData.attributes.prof).toString();
+		let mods = [saveParts.value, saveParts.prof, saveBonus];
 		for (let i=0; i<mods.length; i++) {
 			if (mods[i] && mods[i] !== "0") {
-				data.mod.push(mods[i]);
+				data.value.push(mods[i]);
 			}
 		}
-		data.mod = data.mod.join("+");
-		
+		data.value = data.value.join("+");
+
 		// Halfling Luck check
 		let d20String = "1d20";
 		if (Utils.isHalfling(actor)) {
 			d20String = "1d20r<2";
 		}
-		
-		if (data.mod !== "") {
-			parts.push("@mod");
+
+		if (data.value !== "") {
+			parts.push("@value");
 		}
-		
+
 		let rollState = params ? CustomRoll.getRollState(params) : null;
-		
+
 		let numRolls = game.settings.get("betterrolls_kryx_rpg", "d20Mode");
 		if (rollState && numRolls == 1) {
 			numRolls = 2;
 		}
-		
+
 		return await CustomRoll.rollMultiple(numRolls, d20String, parts, data, flavor, params.critThreshold || null, rollState);
 	}
-	
+
 	static newItemRoll(item, params, fields) {
 		let roll = new CustomItemRoll(item, params, fields);
 		return roll;
@@ -423,19 +423,19 @@ export class CustomItemRoll {
 		this.params = mergeObject(duplicate(defaultParams), params || {});	// General parameters for the roll as a whole.
 		this.fields = fields;			 									// Where requested roll fields are stored, in the order they should be rendered.
 		this.templates = [];			 									// Where finished templates are stored, in the order they should be rendered.
-		
+
 		this.rolled = false;
 		this.isCrit = this.params.forceCrit || false;			// Defaults to false, becomes "true" when a valid attack or check first crits.
 		this.rollState = null;
-		
+
 		if (!this.params.event) { this.params.event = event; }
-		
+
 		this.checkEvent();
 		this.setRollState();
 		this.updateConfig();
 		this.dicePool = new Roll("0").roll();
 	}
-	
+
 	// Update config settings in the roll.
 	updateConfig() {
 		this.config = {
@@ -455,7 +455,7 @@ export class CustomItemRoll {
 			hideDC: game.settings.get("betterrolls_kryx_rpg", "hideDC"),
 		};
 	}
-	
+
 	checkEvent(ev) {
 		let eventToCheck = ev || this.params.event;
 		if (!eventToCheck) { return; }
@@ -466,7 +466,7 @@ export class CustomItemRoll {
 			this.params.disadv = 1;
 		}
 	}
-	
+
 	// Sets the roll's rollState to "highest" or "lowest" if the roll has advantage or disadvantage, respectively.
 	setRollState() {
 		this.rollState = null;
@@ -484,7 +484,7 @@ export class CustomItemRoll {
 			this.dicePool._dice.push(die);
 		});
 	}
-	
+
 	async roll() {
 		let params = this.params,
 			item = this.item,
@@ -492,11 +492,11 @@ export class CustomItemRoll {
 			actor = item.actor,
 			flags = item.data.flags,
 			save;
-		
+
 		await redUpdateFlags(item);
-		
+
 		Hooks.call("preRollItemBetterRolls", this);
-		
+
 		if (Number.isInteger(params.preset)) {
 			this.updateForPreset();
 		}
@@ -507,7 +507,7 @@ export class CustomItemRoll {
 				this.ammo = this.actor.items.get(consume.target);
 			}
 		}
-		
+
 		if (!params.slotLevel) {
 			if (item.data.type === "spell") {
 				params.slotLevel = await this.configureSpell();
@@ -517,34 +517,34 @@ export class CustomItemRoll {
 
 		// Convert all requested fields into templates to be entered into the chat message.
 		this.templates = await this.allFieldsToTemplates();
-		
+
 		// Check to consume charges. Prevents the roll if charges are required and none are left.
 		let chargeCheck = await this.consumeCharge();
 		if (chargeCheck === "error") { return "error"; }
-		
+
 		// Show properties
 		this.properties = (params.properties) ? this.listProperties() : null;
-		
+
 		let printedSlotLevel = ( item.data.type === "spell" && this.params.slotLevel != item.data.data.level ) ? kryx_rpg.spellLevels[this.params.slotLevel] : null;
-			
+
 		let title = (this.params.title || await renderTemplate("modules/betterrolls_kryx_rpg/templates/red-header.html", {item:item, slotLevel:printedSlotLevel}));
-		
+
 		// Add token's ID to chat roll, if valid
 		let tokenId;
 		if (actor.token) {
 			tokenId = [canvas.tokens.get(actor.token.id).scene.id, actor.token.id].join(".");
 		}
-		
+
 		if (params.useTemplate && (item.data.type == "feat" || item.data.data.level == 0)) {
 			this.placeTemplate();
 		}
-		
+
 		this.rolled = true;
-		
+
 		await Hooks.callAll("rollItemBetterRolls", this);
-		
+
 		await new Promise(r => setTimeout(r, 25));
-		
+
 		let content = await renderTemplate("modules/betterrolls_kryx_rpg/templates/red-fullroll.html", {
 			item: item,
 			actor: actor,
@@ -556,12 +556,12 @@ export class CustomItemRoll {
 			properties: this.properties
 		});
 		this.content = content;
-		
+
 		if (chargeCheck === "destroy") { await actor.deleteOwnedItem(item.id); }
 
 		return this.content;
 	}
-	
+
 /*
 	CustomItemRoll(item,
 	{
@@ -695,10 +695,10 @@ export class CustomItemRoll {
 		}
 		return true;
 	}
-	
+
 	async allFieldsToTemplates() {
 		return new Promise(async (resolve, reject) => {
-			
+
 			for (let i=0;i<this.fields.length;i++) {
 				await this.fieldToTemplate(this.fields[i]);
 			}
@@ -706,21 +706,21 @@ export class CustomItemRoll {
 			if (this.isCrit && this.hasDamage && this.item.data.flags.BetterRollsKryxRPG?.critDamage?.value) {
 				await this.fieldToTemplate(["crit"]);
 			}
-			
+
 			resolve(this.templates);
 		});
 	}
-	
+
 	async toMessage() {
 		if (this.rolled) {
 			console.log("Already rolled!", this);
 		} else {
-		
+
 			let content = await this.roll();
 			if (content === "error") return;
-			
+
 			let wd = getWhisperData();
-			
+
 			// Configure sound based on Dice So Nice and Maestro sounds
 			let has3DDiceSound = game.dice3d ? game.settings.get("dice-so-nice", "settings").enabled : false;
 			let playRollSounds = this.config.playRollSounds;
@@ -740,15 +740,15 @@ export class CustomItemRoll {
 				blind: wd.blind,
 				sound: (playRollSounds && !hasMaestroSound && !has3DDiceSound) ? CONFIG.sounds.dice : null,
 			};
-			
+
 			if (wd.whisper) { this.chatData.whisper = wd.whisper; }
-			
+
 			await Hooks.callAll("messageBetterRolls", this, this.chatData);
 			return await createMessage(this);
 		}
 	}
-	
-	
+
+
 	/*
 	* Updates the rollRequests based on the brkr flags.
 	*/
@@ -763,8 +763,8 @@ export class CustomItemRoll {
 			useTemplate = false,
 			fields = [],
 			val = (preset === 1) ? "altValue" : "value";
-			
-		
+
+
 		if (brFlags) {
 			// Assume new action of the button based on which fields are enabled for Quick Rolls
 			function flagIsTrue(flag) {
@@ -774,13 +774,13 @@ export class CustomItemRoll {
 			function getFlag(flag) {
 				return (brFlags[flag] ? (brFlags[flag][val]) : null);
 			}
-			
+
 			if (flagIsTrue("quickFlavor") && itemData.chatFlavor) { fields.push(["flavor"]); }
 			if (flagIsTrue("quickDesc")) { fields.push(["desc"]); }
 			if (flagIsTrue("quickAttack") && isAttack(item)) { fields.push(["attack"]); }
 			if (flagIsTrue("quickCheck") && isCheck(item)) { fields.push(["check"]); }
 			if (flagIsTrue("quickSave") && isSave(item)) { fields.push(["savedc"]); }
-			
+
 			if (brFlags.quickDamage && (brFlags.quickDamage[val].length > 0)) {
 				for (let i = 0; i < brFlags.quickDamage[val].length; i++) {
 					let isVersatile = (i == 0) && flagIsTrue("quickVersatile");
@@ -796,12 +796,12 @@ export class CustomItemRoll {
 				useCharge = duplicate(getFlag("quickCharges"));
 			}
 			if (flagIsTrue("quickTemplate")) { useTemplate = true; }
-		} else { 
+		} else {
 			//console.log("Request made to Quick Roll item without flags!");
 			fields.push(["desc"]);
 			properties = true;
 		}
-		
+
 		this.params = mergeObject(this.params, {
 			properties,
 			useCharge,
@@ -809,10 +809,10 @@ export class CustomItemRoll {
 		});
 
 		console.log(this.params);
-		
+
 		this.fields = fields.concat((this.fields || []).slice());
 	}
-	
+
 	/**
 	* A function for returning the properties of an item, which can then be printed as the footer of a chat card.
 	*/
@@ -821,7 +821,7 @@ export class CustomItemRoll {
 		let properties = [];
 		let data = item.data.data,
 			ad = item.actor.data.data;
-		
+
 		let range = ((data.range) && (data.range.value || data.range.units)) ? (data.range.value || "") + (((data.range.long) && (data.range.long !== 0) && (data.rangelong != data.range.value)) ? "/" +data.range.long : "") + " " + (data.range.units ? kryx_rpg.distanceUnits[data.range.units] : "") : null;
 		let target = (data.target && data.target.type) ? i18n("Target: ").concat(kryx_rpg.targetTypes[data.target.type]) + ((data.target.units ) && (data.target.units !== "none") ? " (" + data.target.value + " " + kryx_rpg.distanceUnits[data.target.units] + ")" : "") : null;
 		let activation = (data.activation && (data.activation.type !== "") && (data.activation.type !== "none")) ? data.activation.cost + " " + data.activation.type : null;
@@ -846,16 +846,16 @@ export class CustomItemRoll {
 				// Spell attack labels
 				data.damageLabel = data.actionType === "heal" ? i18n("brkr.chat.healing") : i18n("brkr.chat.damage");
 				data.isAttack = data.actionType === "attack";
-				
+
 				let components = data.components,
 					componentString = "";
 				if (components.vocal) { componentString += i18n("brkr.chat.abrVocal"); }
 				if (components.somatic) { componentString += i18n("brkr.chat.abrSomatic"); }
-				if (components.material) { 
+				if (components.material) {
 					componentString += i18n("brkr.chat.abrMaterial");
 					if (data.materials.value) { componentString += " (" + data.materials.value + (data.materials.consumed ? i18n("brkr.chat.consumedBySpell") : "") + ")"; }
 				}
-				
+
 				properties = [
 					kryx_rpg.spellSchools[data.school],
 					kryx_rpg.spellLevels[data.level],
@@ -909,7 +909,7 @@ export class CustomItemRoll {
 		let output = properties.filter(p => (p) && (p.length !== 0) && (p !== " "));
 		return output;
 	}
-	
+
 	addToRollData(data) {
 		data.classes = this.item.actor.items.reduce((obj, i) => {
 			if ( i.type === "class" ) {
@@ -919,7 +919,7 @@ export class CustomItemRoll {
 		}, {});
 		data.prof = this.item.actor.data.data.attributes.prof;
 	}
-	
+
 	/**
 	* A function for returning a roll template with crits and fumbles appropriately colored.
 	* @param {Object} args					Object containing the html for the roll and whether or not the roll is a crit
@@ -954,7 +954,7 @@ export class CustomItemRoll {
 			});
 			debug("CRITS", high);
 			debug("FUMBLES", low);
-			
+
 			if ((high > 0) && (low == 0)) $($html.find(selector)[i]).addClass("success");
 			else if ((high == 0) && (low > 0)) $($html.find(selector)[i]).addClass("failure");
 			else if ((high > 0) && (low > 0)) $($html.find(selector)[i]).addClass("mixed");
@@ -965,8 +965,8 @@ export class CustomItemRoll {
 			isCrit: isCrit
 		};
 	}
-	
-	/* 
+
+	/*
 		Rolls an attack roll for the item.
 		@param {Object} args				Object containing all named parameters
 			@param {Number} adv				1 for advantage
@@ -985,19 +985,19 @@ export class CustomItemRoll {
 			parts = [],
 			rollData = duplicate(actorData);
 
-		
+
 		this.addToRollData(rollData);
 		this.hasAttack = true;
-		
+
 		// Add critical threshold
 		let critThreshold = 20;
 		let characterCrit = 20;
 		try { characterCrit = Number(getProperty(itm, "actor.data.flags.kryx_rpg.weaponCriticalThreshold")) || 20;  }
 		catch(error) { characterCrit = itm.actor.data.flags.kryx_rpg.weaponCriticalThreshold || 20; }
-		
+
 		let itemCrit = Number(getProperty(itm, "data.flags.BetterRollsKryxRPG.critRange.value")) || 20;
 		//	console.log(critThreshold, characterCrit, itemCrit);
-		
+
 		// If a specific critThreshold is set, use that
 		if (args.critThreshold) {
 			critThreshold = args.critThreshold;
@@ -1009,38 +1009,38 @@ export class CustomItemRoll {
 				critThreshold = Math.min(critThreshold, itemCrit);
 			}
 		}
-		
-		// Add ability modifier bonus
+
+		// Add ability value bonus
 		let abl = "";
 		if (itm.data.type == "spell") {
 			abl = itemData.ability || actorData.attributes.spellcasting;
 		} else if (itm.data.type == "weapon") {
 			if (itemData.properties.fin && (itemData.ability === "str" || itemData.ability === "dex" || itemData.ability === "")) {
-				if (actorData.abilities.str.mod >= actorData.abilities.dex.mod) { abl = "str"; }
+				if (actorData.abilities.str.value >= actorData.abilities.dex.value) { abl = "str"; }
 				else { abl = "dex"; }
 			} else { abl = itemData.ability || (itemData.actionType === "mwak" ? "str" : itemData.actionType === "rwak" ? "dex" : "") }
 		} else {
 			abl = itemData.ability || "";
 		}
-		
+
 		if (abl.length) {
 			parts.push(`@abl`);
-			rollData.abl = actorData.abilities[abl]?.mod;
-			//console.log("Adding Ability mod", abl);
+			rollData.abl = actorData.abilities[abl]?.value;
+			//console.log("Adding Ability value", abl);
 		}
-		
+
 		// Add proficiency, expertise, or Jack of all Trades
 		if ( itm.data.type == "spell" || itm.data.type == "feat" || itemData.proficient ) {
 			parts.push(`@prof`);
 			rollData.prof = Math.floor(actorData.attributes.prof);
-			//console.log("Adding Proficiency mod!");
+			//console.log("Adding Proficiency value!");
 		}
-		
+
 		// Add item's bonus
 		if ( itemData.attackBonus ) {
 			parts.push(`@bonus`);
 			rollData.bonus = itemData.attackBonus;
-			//console.log("Adding Bonus mod!", itemData);
+			//console.log("Adding Bonus value!", itemData);
 		}
 
 		if(this.ammo?.data) {
@@ -1051,49 +1051,49 @@ export class CustomItemRoll {
 				title += ` [${this.ammo.name}]`;
 			}
 		}
-		
+
 		// Add custom situational bonus
 		if (args.bonus) {
 			parts.push(args.bonus);
 		}
-		
+
 		if (actorData.bonuses && isAttack(itm)) {
 			let actionType = `${itemData.actionType}`;
 			if (actorData?.bonuses[actionType]?.attack) {
 				parts.push("@" + actionType);
 				rollData[actionType] = actorData.bonuses[actionType].attack;
 			}
-		}	
-		
+		}
+
 		// Establish number of rolls using advantage/disadvantage
 		let adv = this.params.adv;
 		if (args.adv) { adv = args.adv; }
-		
+
 		let disadv = this.params.disadv;
 		if (args.disadv) { disadv = args.disadv; }
-		
+
 		let rollState = CustomRoll.getRollState({adv:args.adv, disadv:args.disadv});
-		
+
 		let numRolls = this.config.d20Mode;
-		
+
 		if (rollState) {
 			numRolls = 2;
 		}
-		
+
 		// Elven Accuracy check
 		if (numRolls == 2) {
 			if (getProperty(itm, "actor.data.flags.kryx_rpg.elvenAccuracy") && ["dex", "int", "wis", "cha"].includes(abl) && rollState !== "lowest") {
 				numRolls = 3;
 			}
 		}
-		
+
 		let d20String = "1d20";
-		
+
 		// Halfling Luck check
 		if (Utils.isHalfling(itm.actor)) {
 			d20String = "1d20r<2";
 		}
-		
+
 		let output = mergeObject({type:"attack"}, await CustomRoll.rollMultiple(numRolls, d20String, parts, rollData, title, critThreshold, rollState, args.triggersCrit));
 		if (output.isCrit) {
 			this.isCrit = true;
@@ -1106,19 +1106,19 @@ export class CustomItemRoll {
 
 		return output;
 	}
-	
+
 	async damageTemplate ({baseRoll, critRoll, labels, type}) {
 		let baseTooltip = await baseRoll.getTooltip(),
 			templateTooltip;
-		
+
 		if (baseRoll.terms.length === 0) return;
-		
+
 		if (critRoll) {
 			let critTooltip = await critRoll.getTooltip();
 			templateTooltip = await renderTemplate("modules/betterrolls_kryx_rpg/templates/red-dualtooltip.html", {lefttooltip: baseTooltip, righttooltip: critTooltip});
 		} else { templateTooltip = baseTooltip; }
-		
-		
+
+
 		let chatData = {
 			tooltip: templateTooltip,
 			lefttotal: baseRoll.total,
@@ -1132,13 +1132,13 @@ export class CustomItemRoll {
 			maxRoll: await new Roll(baseRoll.formula).evaluate({maximize:true}).total,
 			maxCrit: critRoll ? await new Roll(critRoll.formula).evaluate({maximize:true}).total : null
 		};
-		
+
 		let html = {
 			html: await renderTemplate("modules/betterrolls_kryx_rpg/templates/red-damageroll.html", chatData)
 		};
 		html = CustomItemRoll.tagCrits(html, baseRoll, ".red-base-die");
 		html = CustomItemRoll.tagCrits(html, critRoll, ".red-extra-die");
-		
+
 		let output = {
 			type: "damage",
 			html: html["html"],
@@ -1147,7 +1147,7 @@ export class CustomItemRoll {
 
 		return output;
 	}
-	
+
 	async rollDamage({damageIndex = 0, forceVersatile = false, forceCrit = false, bonus = 0, customContext = null}) {
 		let itm = this.item;
 		let itemData = itm.data.data,
@@ -1158,14 +1158,14 @@ export class CustomItemRoll {
 			damageType = itemData.damage.parts[damageIndex][1],
 			isVersatile = false,
 			slotLevel = this.params.slotLevel;
-		
+
 		rollData.item = duplicate(itemData);
 		rollData.item.level = slotLevel;
 		this.addToRollData(rollData);
 
 		// Makes the custom roll flagged as having a damage roll.
 		this.hasDamage = true;
-		
+
 		// Change first damage formula if versatile
 		if (((this.params.versatile && damageIndex === 0) || forceVersatile) && itemData.damage.versatile.length > 0) {
 			damageFormula = itemData.damage.versatile;
@@ -1175,24 +1175,24 @@ export class CustomItemRoll {
 		}
 
 		if (!damageFormula) { return null; }
-		
+
 		let type = itm.data.type,
 			parts = [],
 			dtype = CONFIG.BetterRollsKryxRPG.combinedDamageTypes[damageType];
-		
+
 		let generalMod = rollData.attributes.spellcasting;
-		
-		// Spells don't push their ability modifier to damage by default. This is here so the user can add "+ @mod" to their damage roll if they wish.
+
+		// Spells don't push their abilities to damage by default. This is here so the user can add "+ @value" to their damage roll if they wish.
 		if (type === "spell") {
 			abl = itemData.ability ? itemData.ability : generalMod;
 		}
-		
 
-		// Applies ability modifier on weapon and feat damage rolls, but only for the first damage roll listed on the item.
+
+		// Applies ability on weapon and feat damage rolls, but only for the first damage roll listed on the item.
 		if (!abl && (type === "weapon" || type === "feat") && damageIndex === 0) {
 			if (type === "weapon") {
 				if (itemData.properties.fin && (itemData.ability === "str" || itemData.ability === "dex" || itemData.ability === "")) {
-					if (rollData.abilities.str.mod >= rollData.abilities.dex.mod) { abl = "str"; }
+					if (rollData.abilities.str.value >= rollData.abilities.dex.value) { abl = "str"; }
 					else { abl = "dex"; }
 				} else if (itemData.actionType == "mwak") {
 					abl = "str";
@@ -1201,10 +1201,10 @@ export class CustomItemRoll {
 				}
 			}
 		}
-		
-		// Users may add "+ @mod" to their rolls to manually add the ability modifier to their rolls.
-		rollData.mod = (abl !== "") ? rollData.abilities[abl]?.mod : 0;
-		
+
+		// Users may add "+ @value" to their rolls to manually add the ability value to their rolls.
+		rollData.value = (abl !== "") ? rollData.abilities[abl]?.value : 0;
+
 		// Prepare roll label
 		let titlePlacement = this.config.damageTitlePlacement.toString(),
 			damagePlacement = this.config.damageRollPlacement.toString(),
@@ -1216,23 +1216,23 @@ export class CustomItemRoll {
 				"2": [],
 				"3": []
 			};
-		
+
 		let titleString = "",
 			damageString = [],
 			contextString = customContext || (flags.quickDamage.context && flags.quickDamage.context[damageIndex]);
-		
+
 		// Show "Healing" prefix only if it's not inherently a heal action
 		if (kryx_rpg.healingTypes[damageType]) { titleString = ""; }
 		// Show "Damage" prefix if it's a damage roll
 		else if (kryx_rpg.damageTypes[damageType]) { titleString += i18n("brkr.chat.damage"); }
-		
+
 		// Title
 		let pushedTitle = false;
 		if (titlePlacement !== "0" && titleString && !(replaceTitle && contextString && titlePlacement == contextPlacement)) {
 			labels[titlePlacement].push(titleString);
 			pushedTitle = true;
 		}
-		
+
 		// Context
 		if (contextString) {
 			if (contextPlacement === titlePlacement && pushedTitle) {
@@ -1241,7 +1241,7 @@ export class CustomItemRoll {
 				labels[contextPlacement].push(contextString);
 			}
 		}
-		
+
 		// Damage type
 		if (dtype) { damageString.push(dtype); }
 		if (isVersatile) { damageString.push("(" + kryx_rpg.weaponProperties.ver + ")"); }
@@ -1249,13 +1249,13 @@ export class CustomItemRoll {
 		if (damagePlacement !== "0" && damageString.length > 0 && !(replaceDamage && contextString && damagePlacement == contextPlacement)) {
 			labels[damagePlacement].push(damageString);
 		}
-		
+
 		for (let p in labels) {
 			labels[p] = labels[p].join(" - ");
 		};
 
 		if (damageIndex === 0) { damageFormula = this.scaleDamage(damageIndex, isVersatile, rollData) || damageFormula; }
-		
+
 		let bonusAdd = "";
 		if (damageIndex == 0 && rollData.bonuses && isAttack(itm)) {
 			let actionType = `${itemData.actionType}`;
@@ -1263,29 +1263,29 @@ export class CustomItemRoll {
 				bonusAdd = "+" + rollData.bonuses[actionType].damage;
 			}
 		}
-		
+
 		let baseDice = damageFormula + bonusAdd;
 		let baseWithParts = [baseDice];
 		if (parts) {baseWithParts = [baseDice].concat(parts);}
-		
+
 		let rollFormula = baseWithParts.join("+");
-		
+
 		let baseRoll = await new Roll(rollFormula, rollData).roll(),
 			critRoll = null,
 			baseMaxRoll = null,
 			critBehavior = this.params.critBehavior ? this.params.critBehavior : this.config.critBehavior;
-			
+
 		this.addToDicePool(baseRoll);
 
 		if ((forceCrit == true || (this.isCrit && forceCrit !== "never")) && critBehavior !== "0") {
 			critRoll = await this.critRoll(rollFormula, rollData, baseRoll);
 		}
-		
+
 		let damageRoll = await this.damageTemplate({baseRoll: baseRoll, critRoll: critRoll, labels: labels, type:damageType});
 
 		return damageRoll;
 	}
-	
+
 	/*
 	* Rolls critical damage based on a damage roll's formula and output.
 	* This critical damage should not overwrite the base damage - it should be seen as "additional damage dealt on a crit", as crit damage may not be used even if it was rolled.
@@ -1296,7 +1296,7 @@ export class CustomItemRoll {
 		let critBehavior = this.params.critBehavior ? this.params.critBehavior : this.config.critBehavior;
 		let critFormula = rollFormula.replace(/[+-]+\s*(?:@[a-zA-Z0-9.]+|[0-9]+(?![Dd]))/g,"").concat();
 		let critRollData = duplicate(rollData);
-		critRollData.mod = 0;
+		critRollData.value = 0;  // doesn't add mod/value to crit damage
 		let critRoll = await new Roll(critFormula);
 		let savage;
 
@@ -1310,12 +1310,12 @@ export class CustomItemRoll {
 		let add = (itm.actor && savage) ? 1 : 0;
 		critRoll.alter(1, add);
 		critRoll.roll();
-		
+
 		// If critBehavior = 2, maximize base dice
 		if (critBehavior === "2") {
 			critRoll = await new Roll(critRoll.formula).evaluate({maximize:true});
 		}
-		
+
 		// If critBehavior = 3, maximize base and crit dice
 		else if (critBehavior === "3") {
 			let maxDifference = Roll.maximize(baseRoll.formula).total - baseRoll.total;
@@ -1327,13 +1327,13 @@ export class CustomItemRoll {
 
 		return critRoll;
 	}
-	
+
 	scaleDamage(damageIndex, versatile, rollData) {
 		let item = this.item;
 		let itemData = item.data.data;
 		let actorData = item.actor.data.data;
 		let spellLevel = this.params.slotLevel;
-		
+
 		// Scaling for cantrip damage by level. Affects only the first damage roll of the spell.
 		if (item.data.type === "spell" && itemData.scaling.mode === "cantrip") {
 			let parts = itemData.damage.parts.map(d => d[0]);
@@ -1348,7 +1348,7 @@ export class CustomItemRoll {
 			}
 			return formula;
 		}
-		
+
 		// Scaling for spell damage by spell slot used. Affects only the first damage roll of the spell.
 		if (item.data.type === "spell" && itemData.scaling.mode === "level" && spellLevel) {
 			let parts = itemData.damage.parts.map(d => d[0]);
@@ -1360,10 +1360,10 @@ export class CustomItemRoll {
 				formula = item._scaleDamage([formula], scale || formula, add, rollData);
 				if (versatile) { formula = item._scaleDamage([itemData.damage.versatile], itemData.damage.versatile, add, rollData); }
 			}
-			
+
 			return formula;
 		}
-		
+
 		return null;
 	}
 
@@ -1374,7 +1374,7 @@ export class CustomItemRoll {
 			return await this.rollDamage({damageIndex:Number(damageIndex), forceCrit:"never"});
 		}
 	}
-	
+
 	/*
 	Rolls the Other Formula field. Is subject to crits.
 	*/
@@ -1386,9 +1386,9 @@ export class CustomItemRoll {
 			formula = item.data.data.formula,
 			rollData = duplicate(item.actor.data.data),
 			flags = item.data.flags.BetterRollsKryxRPG;
-		
+
 		this.addToRollData(rollData);
-		
+
 		let titlePlacement = this.config.damageTitlePlacement,
 			contextPlacement = this.config.damageContextPlacement,
 			replaceTitle = this.config.contextReplacesTitle,
@@ -1397,17 +1397,17 @@ export class CustomItemRoll {
 				"2": [],
 				"3": []
 			};
-			
+
 		// Title
 		let titleString = i18n("brkr.chat.other"),
 			contextString = flags.quickOther.context;
-		
+
 		let pushedTitle = false;
 		if (titlePlacement !== "0" && !(replaceTitle && contextString && titlePlacement == contextPlacement)) {
 			labels[titlePlacement].push(titleString);
 			pushedTitle = true;
 		}
-		
+
 		// Context
 		if (contextString) {
 			if (contextPlacement === titlePlacement && pushedTitle) {
@@ -1416,26 +1416,26 @@ export class CustomItemRoll {
 				labels[contextPlacement].push(contextString);
 			}
 		}
-		
+
 		let baseRoll = await new Roll(formula, rollData).roll(),
 			critRoll = null,
 			baseMaxRoll = null,
 			critBehavior = this.params.critBehavior ? this.params.critBehavior : this.config.critBehavior;
-			
+
 		if (isCrit && critBehavior !== "0") {
 			critRoll = await this.critRoll(formula, rollData, baseRoll);
 		}
-		
+
 		let output = this.damageTemplate({baseRoll: baseRoll, critRoll: critRoll, labels: labels});
 
-		
+
 		[baseRoll, critRoll].forEach(roll => {
 			this.addToDicePool(roll);
 		});
 
 		return output;
 	}
-	
+
 	/* 	Generates the html for a save button to be inserted into a chat message. Players can click this button to perform a roll through their controlled token.
 	*/
 	async saveRollButton({customAbl = null, customDC = null}) {
@@ -1446,20 +1446,20 @@ export class CustomItemRoll {
 		let saveData = getSave(item);
 		if (customAbl) { saveData.ability = saveArgs.customAbl; }
 		if (customDC) { saveData.dc = saveArgs.customDC; }
-		
+
 		let hideDC = (this.config.hideDC == "2" || (this.config.hideDC == "1" && actor.data.type == "npc")); // Determine whether the DC should be hidden
 
 		let divHTML = `<span ${hideDC ? 'class="hideSave"' : null} style="display:inline;line-height:inherit;">${saveData.dc}</span>`;
-		
+
 		let saveLabel = `${i18n("brkr.buttons.saveDC")} ` + divHTML + ` ${kryx_rpg.abilities[saveData.ability]}`;
 		let button = {
 			type: "saveDC",
 			html: await renderTemplate("modules/betterrolls_kryx_rpg/templates/red-save-button.html", {data: saveData, saveLabel: saveLabel})
 		}
-		
+
 		return button;
 	}
-	
+
 	async rollTool(preArgs) {
 		let args = mergeObject({adv: 0, disadv: 0, bonus: null, triggersCrit: true, critThreshold: null, rollState: this.rollState}, preArgs || {});
 		let itm = this.item;
@@ -1471,14 +1471,14 @@ export class CustomItemRoll {
 			rollData = duplicate(actorData);
 		rollData.item = itemData;
 		this.addToRollData(rollData);
-		
+
 		// Add ability modifier bonus
 		if ( itemData.ability ) {
 			let abl = (itemData.ability),
-				mod = abl ? actorData.abilities[abl].mod : 0;
-			if (mod !== 0) {
-				parts.push("@mod");
-				rollData.mod = mod;
+				value = abl ? actorData.abilities[abl].value : 0;
+			if (value !== 0) {
+				parts.push("@value");
+				rollData.value = value;
 			}
 		}
 		
